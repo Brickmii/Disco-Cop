@@ -7,19 +7,41 @@ const MAX_PLAYERS := 4
 var device_to_player: Dictionary = {}  # device_id -> player_index
 var player_to_device: Dictionary = {}  # player_index -> device_id
 
-# Action prefixes per player for gamepad remapping
-var _gamepad_actions := {
-	"move_left": "ui_left",
-	"move_right": "ui_right",
-	"aim_up": "ui_up",
-	"aim_down": "ui_down",
-}
+# Event-driven "just pressed" tracking for gamepad buttons
+var _joy_pressed_events: Dictionary = {}  # "device_button" -> true
+var _trigger_was_active: Dictionary = {}  # device_id -> bool
 
 
 func _ready() -> void:
 	# Keyboard is always player 0
 	assign_device_to_player(-1, 0)
+	# Also claim first gamepad for player 0 (prevents lobby creating player 2)
+	device_to_player[0] = 0
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func _input(event: InputEvent) -> void:
+	# Track button press events for just-pressed detection
+	if event is InputEventJoypadButton and event.pressed:
+		var key := "%d_%d" % [event.device, event.button_index]
+		_joy_pressed_events[key] = true
+
+	# Track trigger crossing the activation threshold
+	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_TRIGGER_RIGHT:
+		var now_active: bool = event.axis_value > 0.2
+		var was_active: bool = _trigger_was_active.get(event.device, false)
+		if now_active and not was_active:
+			_joy_pressed_events["%d_rt" % event.device] = true
+		_trigger_was_active[event.device] = now_active
+
+
+func _physics_process(_delta: float) -> void:
+	# Clear just-pressed flags AFTER all nodes have had a chance to read them
+	call_deferred("_clear_joy_events")
+
+
+func _clear_joy_events() -> void:
+	_joy_pressed_events.clear()
 
 
 func assign_device_to_player(device_id: int, player_index: int) -> void:
@@ -45,7 +67,6 @@ func is_action_pressed(player_index: int, action: String) -> bool:
 			return _is_gamepad_action_pressed(0, action)
 		return false
 	else:
-		# Gamepad player - check device-specific input
 		return _is_gamepad_action_pressed(device_id, action)
 
 
@@ -82,7 +103,6 @@ func get_axis(player_index: int, negative_action: String, positive_action: Strin
 
 
 func _is_gamepad_action_pressed(device_id: int, action: String) -> bool:
-	# Map actions to gamepad buttons/axes
 	match action:
 		"move_left":
 			return Input.get_joy_axis(device_id, JOY_AXIS_LEFT_X) < -0.2
@@ -110,17 +130,19 @@ func _is_gamepad_action_pressed(device_id: int, action: String) -> bool:
 func _is_gamepad_action_just_pressed(device_id: int, action: String) -> bool:
 	match action:
 		"jump":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_A)
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_A])
 		"shoot":
-			return Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_RIGHT) > 0.2
+			return _joy_pressed_events.has("%d_rt" % device_id)
 		"reload":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_X)
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_X])
 		"interact":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_Y)
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_Y])
 		"swap_weapon":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_B)
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_B])
 		"pause":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_START)
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_START])
+		"ui_join":
+			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_START])
 	return false
 
 

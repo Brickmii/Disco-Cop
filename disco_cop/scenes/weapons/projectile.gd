@@ -91,6 +91,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.has_method("take_damage"):
 		body.take_damage(get_final_damage(), global_position)
 		_emit_hit()
+	_spawn_impact_vfx()
 	_deactivate()
 
 
@@ -98,6 +99,7 @@ func _on_area_entered(area: Area2D) -> void:
 	# Hit hurtboxes
 	if area.has_method("receive_hit"):
 		area.receive_hit(self)
+		_spawn_impact_vfx()
 		_deactivate()
 
 
@@ -129,6 +131,13 @@ func _update_projectile_visual() -> void:
 			WeaponData.Element.ICE: sprite.modulate = Color.LIGHT_BLUE
 			WeaponData.Element.ELECTRIC: sprite.modulate = Color.YELLOW
 			WeaponData.Element.EXPLOSIVE: sprite.modulate = Color.DARK_RED
+
+
+func _spawn_impact_vfx() -> void:
+	if element == WeaponData.Element.EXPLOSIVE:
+		VFXSpawner.spawn("explosion", global_position, 1.5)
+	else:
+		VFXSpawner.spawn("impact", global_position)
 
 
 func _emit_hit() -> void:

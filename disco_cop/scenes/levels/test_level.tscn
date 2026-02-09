@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://c2testlevel01"]
+[gd_scene load_steps=14 format=3 uid="uid://c2testlevel01"]
 
 [ext_resource type="PackedScene" uid="uid://c2player001" path="res://scenes/player/player.tscn" id="1_player_scene"]
 [ext_resource type="PackedScene" uid="uid://c2skatinggrunt01" path="res://scenes/enemies/skating_grunt.tscn" id="2_skating_grunt"]
@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" uid="uid://c2flyer001" path="res://scenes/enemies/flyer.tscn" id="5_flyer"]
 [ext_resource type="PackedScene" uid="uid://c2discokingboss" path="res://scenes/bosses/boss_disco_king.tscn" id="6_disco_king"]
 [ext_resource type="Script" path="res://scenes/levels/test_level.gd" id="4_test_level_script"]
+[ext_resource type="Texture2D" uid="uid://cq0lisg0cyrwh" path="res://assets/sprites/environment/parallax_sky.png" id="7_parallax_sky"]
+[ext_resource type="Texture2D" uid="uid://bwqbbp4d6abxe" path="res://assets/sprites/environment/parallax_city_far.png" id="8_parallax_far"]
+[ext_resource type="Texture2D" uid="uid://c81lurwyji4t6" path="res://assets/sprites/environment/parallax_city_near.png" id="9_parallax_near"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(5120, 32)
@@ -210,8 +213,30 @@ position = Vector2(3600, 380)
 [node name="DiscoKing" parent="." instance=ExtResource("6_disco_king")]
 position = Vector2(4800, 688)
 
-[node name="Background" type="ColorRect" parent="."]
-z_index = -10
-offset_right = 5120.0
-offset_bottom = 720.0
-color = Color(0.1, 0.05, 0.15, 1)
+[node name="ParallaxBG" type="ParallaxBackground" parent="."]
+
+[node name="Sky" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.0, 0.0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/Sky"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("7_parallax_sky")
+
+[node name="CityFar" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.2, 0.0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/CityFar"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("8_parallax_far")
+
+[node name="CityNear" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.5, 0.0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/CityNear"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("9_parallax_near")

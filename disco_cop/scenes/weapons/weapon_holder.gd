@@ -160,6 +160,10 @@ func _fire_single_projectile() -> void:
 		var spawn_pos := global_position + aim_vector * 20.0
 		proj.activate(spawn_pos, final_dir, current_weapon, player_index, is_crit)
 
+	# Muzzle flash VFX at barrel
+	var muzzle_pos := global_position + aim_vector * 20.0
+	VFXSpawner.spawn("muzzle_flash", muzzle_pos, 1.0, aim_angle)
+
 	if current_ammo <= 0:
 		try_reload()
 

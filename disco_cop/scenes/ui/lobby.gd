@@ -42,10 +42,13 @@ func _input(event: InputEvent) -> void:
 			_update_slot(result)
 			_update_start_label()
 
-	# Start game
-	if event.is_action_pressed("ui_join") or event.is_action_pressed("jump"):
-		if GameManager.get_active_player_count() >= 1:
-			_start_game()
+	# Start game — Enter, Start button, or A button (after join)
+	var start_pressed := event.is_action_pressed("ui_join") or event.is_action_pressed("jump")
+	if not start_pressed and event is InputEventJoypadButton and event.pressed:
+		if event.button_index == JOY_BUTTON_START or event.button_index == JOY_BUTTON_A:
+			start_pressed = true
+	if start_pressed and GameManager.get_active_player_count() >= 1:
+		_start_game()
 
 
 func _update_slot(index: int) -> void:
@@ -73,4 +76,4 @@ func _on_player_joined(player_index: int, _device_id: int) -> void:
 
 
 func _start_game() -> void:
-	get_tree().change_scene_to_file("res://scenes/levels/level_01.tscn")
+	get_tree().change_scene_to_file("res://scenes/levels/test_level.tscn")

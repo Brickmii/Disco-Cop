@@ -1,0 +1,188 @@
+[gd_scene load_steps=32 format=3 uid="uid://c2vfx001"]
+
+[ext_resource type="Script" path="res://scenes/effects/vfx.gd" id="1_vfx"]
+[ext_resource type="Texture2D" uid="uid://gedbsoeavmvr" path="res://assets/sprites/weapons/muzzle_flash_sheet.png" id="2_muzzle"]
+[ext_resource type="Texture2D" uid="uid://q0k7yv0i7tcb" path="res://assets/sprites/weapons/impact_sheet.png" id="3_impact"]
+[ext_resource type="Texture2D" uid="uid://ds5q8xlyh4mt0" path="res://assets/sprites/effects/explosion_sheet.png" id="4_explosion"]
+[ext_resource type="Texture2D" uid="uid://dja4ay6pf6lxl" path="res://assets/sprites/effects/shield_break_sheet.png" id="5_shield_break"]
+[ext_resource type="Texture2D" uid="uid://b5k544jvssyms" path="res://assets/sprites/effects/loot_glow_sheet.png" id="6_loot_glow"]
+
+[sub_resource type="AtlasTexture" id="muzzle_0"]
+atlas = ExtResource("2_muzzle")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="muzzle_1"]
+atlas = ExtResource("2_muzzle")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="muzzle_2"]
+atlas = ExtResource("2_muzzle")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="impact_0"]
+atlas = ExtResource("3_impact")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="impact_1"]
+atlas = ExtResource("3_impact")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="impact_2"]
+atlas = ExtResource("3_impact")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="impact_3"]
+atlas = ExtResource("3_impact")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="explosion_0"]
+atlas = ExtResource("4_explosion")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="explosion_1"]
+atlas = ExtResource("4_explosion")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="explosion_2"]
+atlas = ExtResource("4_explosion")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="explosion_3"]
+atlas = ExtResource("4_explosion")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="explosion_4"]
+atlas = ExtResource("4_explosion")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="explosion_5"]
+atlas = ExtResource("4_explosion")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="shield_0"]
+atlas = ExtResource("5_shield_break")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="shield_1"]
+atlas = ExtResource("5_shield_break")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="shield_2"]
+atlas = ExtResource("5_shield_break")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="shield_3"]
+atlas = ExtResource("5_shield_break")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="loot_glow_0"]
+atlas = ExtResource("6_loot_glow")
+region = Rect2(0, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="loot_glow_1"]
+atlas = ExtResource("6_loot_glow")
+region = Rect2(24, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="loot_glow_2"]
+atlas = ExtResource("6_loot_glow")
+region = Rect2(48, 0, 24, 24)
+
+[sub_resource type="AtlasTexture" id="loot_glow_3"]
+atlas = ExtResource("6_loot_glow")
+region = Rect2(72, 0, 24, 24)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vfx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("muzzle_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("muzzle_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("muzzle_2")
+}],
+"loop": false,
+"name": &"muzzle_flash",
+"speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("impact_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("impact_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("impact_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("impact_3")
+}],
+"loop": false,
+"name": &"impact",
+"speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("explosion_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("explosion_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("explosion_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("explosion_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("explosion_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("explosion_5")
+}],
+"loop": false,
+"name": &"explosion",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("shield_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("shield_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("shield_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("shield_3")
+}],
+"loop": false,
+"name": &"shield_break",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("loot_glow_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("loot_glow_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("loot_glow_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("loot_glow_3")
+}],
+"loop": true,
+"name": &"loot_glow",
+"speed": 8.0
+}]
+
+[node name="VFX" type="AnimatedSprite2D"]
+visible = false
+sprite_frames = SubResource("SpriteFrames_vfx")
+script = ExtResource("1_vfx")

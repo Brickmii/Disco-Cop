@@ -18,7 +18,13 @@ import sys
 import os
 import json
 import argparse
+import site
 from pathlib import Path
+
+# Blender doesn't include user site-packages by default
+_user_site = site.getusersitepackages()
+if _user_site not in sys.path:
+    sys.path.append(_user_site)
 
 try:
     from PIL import Image
@@ -79,11 +85,10 @@ def setup_camera(width, height, ortho_scale=0.0):
         cam_obj = bpy.data.objects.new("SpriteCameraObj", cam)
         bpy.context.scene.collection.objects.link(cam_obj)
 
-    # Side view (looking from +Y toward -Y), centered on model
-    # Camera Y offset from model center, Z offset = half height in BU (feet at origin)
+    # Front view from -Y: character faces +X which appears as RIGHT on screen
     cam_z = height / max(width, height) * cam.ortho_scale * 0.5
-    cam_obj.location = (0, 5, cam_z)
-    cam_obj.rotation_euler = (1.5708, 0, 0)  # 90 degrees X rotation
+    cam_obj.location = (0, -10, cam_z)
+    cam_obj.rotation_euler = (1.5708, 0, 0)  # 90° X rotation
 
     bpy.context.scene.camera = cam_obj
     return cam_obj
@@ -99,8 +104,11 @@ def setup_render(width, height):
     scene.render.image_settings.file_format = 'PNG'
     scene.render.image_settings.color_mode = 'RGBA'
 
-    # Use EEVEE for speed
-    scene.render.engine = 'BLENDER_EEVEE_NEXT'
+    # Use EEVEE for speed (Blender 5.0 renamed EEVEE_NEXT back to EEVEE)
+    if 'BLENDER_EEVEE' in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items]:
+        scene.render.engine = 'BLENDER_EEVEE'
+    else:
+        scene.render.engine = 'BLENDER_EEVEE_NEXT'
 
 
 def set_action(action_name):

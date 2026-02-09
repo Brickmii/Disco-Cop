@@ -14,8 +14,10 @@ var _hurt_timer := 0.0
 var _target: Node2D = null
 var _patrol_direction := 1.0
 var _patrol_timer := 0.0
+var _target_search_counter := 0
 
 const HURT_DURATION := 0.2
+const TARGET_SEARCH_INTERVAL := 6  # Check for closest player every N physics frames
 const GRAVITY := 980.0
 
 @onready var sprite: AnimatedSprite2D = get_node_or_null("Sprite")
@@ -51,8 +53,11 @@ func _physics_process(delta: float) -> void:
 	if _hurt_timer > 0:
 		_hurt_timer -= delta
 
-	# Find closest player
-	_target = _find_closest_player()
+	# Find closest player (throttled to save CPU)
+	_target_search_counter += 1
+	if _target_search_counter >= TARGET_SEARCH_INTERVAL or _target == null:
+		_target_search_counter = 0
+		_target = _find_closest_player()
 
 	match current_state:
 		State.IDLE:

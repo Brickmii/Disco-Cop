@@ -2,7 +2,7 @@ class_name EnemyData
 extends Resource
 ## Data definition for enemy types.
 
-enum EnemyType { GRUNT, SHOOTER, FLYER }
+enum EnemyType { GRUNT, SHOOTER, FLYER, SKATING_GRUNT, SKATING_SHOOTER }
 
 @export var enemy_name: String = "Grunt"
 @export var enemy_type: EnemyType = EnemyType.GRUNT

@@ -1,10 +1,10 @@
 [gd_scene load_steps=24 format=3 uid="uid://c2skatingshooter01"]
 
 [ext_resource type="Script" path="res://scenes/enemies/skating_shooter.gd" id="1_skating_shooter"]
-[ext_resource type="Texture2D" uid="uid://shooter_skate01" path="res://assets/sprites/enemies/shooter_skate_sheet.png" id="2_skate_sheet"]
-[ext_resource type="Texture2D" uid="uid://shooter_shoot01" path="res://assets/sprites/enemies/shooter_shoot_skate_sheet.png" id="3_shoot_sheet"]
-[ext_resource type="Texture2D" uid="uid://shooter_hurt01" path="res://assets/sprites/enemies/shooter_hurt_sheet.png" id="4_hurt_sheet"]
-[ext_resource type="Texture2D" uid="uid://shooter_death01" path="res://assets/sprites/enemies/shooter_death_sheet.png" id="5_death_sheet"]
+[ext_resource type="Texture2D" uid="uid://d0xkr3s6ussy4" path="res://assets/sprites/enemies/shooter_skate_sheet.png" id="2_skate_sheet"]
+[ext_resource type="Texture2D" uid="uid://cbrres5u0dhrn" path="res://assets/sprites/enemies/shooter_shoot_skate_sheet.png" id="3_shoot_sheet"]
+[ext_resource type="Texture2D" uid="uid://dokg3vbkh61tk" path="res://assets/sprites/enemies/shooter_hurt_sheet.png" id="4_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://sgnacud88iix" path="res://assets/sprites/enemies/shooter_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sshooter"]
 size = Vector2(20, 40)
@@ -145,7 +145,7 @@ animations = [{
 }]
 
 [node name="SkatingShooter" type="CharacterBody2D"]
-collision_layer = 3
+collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_skating_shooter")
 

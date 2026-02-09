@@ -1,10 +1,10 @@
 [gd_scene load_steps=24 format=3 uid="uid://c2skatinggrunt01"]
 
 [ext_resource type="Script" path="res://scenes/enemies/skating_grunt.gd" id="1_skating_grunt"]
-[ext_resource type="Texture2D" uid="uid://skate_sheet01" path="res://assets/sprites/enemies/grunt_skate_sheet.png" id="2_skate_sheet"]
-[ext_resource type="Texture2D" uid="uid://charge_sheet01" path="res://assets/sprites/enemies/grunt_charge_sheet.png" id="3_charge_sheet"]
-[ext_resource type="Texture2D" uid="uid://hurt_sheet01" path="res://assets/sprites/enemies/grunt_hurt_sheet.png" id="4_hurt_sheet"]
-[ext_resource type="Texture2D" uid="uid://death_sheet01" path="res://assets/sprites/enemies/grunt_death_sheet.png" id="5_death_sheet"]
+[ext_resource type="Texture2D" uid="uid://c3vs5cgwn54eg" path="res://assets/sprites/enemies/grunt_skate_sheet.png" id="2_skate_sheet"]
+[ext_resource type="Texture2D" uid="uid://jxu4f1qsnhm4" path="res://assets/sprites/enemies/grunt_charge_sheet.png" id="3_charge_sheet"]
+[ext_resource type="Texture2D" uid="uid://d33i4x4e6kuoj" path="res://assets/sprites/enemies/grunt_hurt_sheet.png" id="4_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://ctyoknhksynm0" path="res://assets/sprites/enemies/grunt_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sgrunt"]
 size = Vector2(20, 40)
@@ -145,7 +145,7 @@ animations = [{
 }]
 
 [node name="SkatingGrunt" type="CharacterBody2D"]
-collision_layer = 3
+collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_skating_grunt")
 

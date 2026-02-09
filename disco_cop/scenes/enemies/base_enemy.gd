@@ -32,7 +32,7 @@ func _ready() -> void:
 		health_component.current_health = enemy_data.max_health
 	health_component.died.connect(_on_died)
 
-	collision_layer = 3  # Enemies layer
+	collision_layer = 4  # Enemies layer (bit 3)
 	collision_mask = 1   # World layer
 
 	_enter_state(State.PATROL)

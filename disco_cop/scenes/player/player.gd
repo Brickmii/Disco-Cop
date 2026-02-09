@@ -1,7 +1,7 @@
 extends CharacterBody2D
 ## Player controller with state machine, double jump, coyote time, 8-dir aiming.
 
-enum State { IDLE, RUN, JUMP, FALL, DOUBLE_JUMP, HURT, DEAD }
+enum State { IDLE, RUN, JUMP, FALL, DOUBLE_JUMP, HURT, STUCK, DEAD }
 enum AimDir { RIGHT, UP_RIGHT, UP, UP_LEFT, LEFT, DOWN_LEFT, DOWN, DOWN_RIGHT }
 
 # Movement tuning
@@ -19,6 +19,10 @@ const JUMP_BUFFER_TIME := 0.1
 const HURT_KNOCKBACK := Vector2(-200, -150)
 const HURT_DURATION := 0.3
 const INVINCIBILITY_DURATION := 1.0
+const STUCK_DAMAGE := 5.0
+const STUCK_DAMAGE_INTERVAL := 0.5
+const STUCK_WIGGLES_TO_ESCAPE := 3
+const STUCK_ESCAPE_SPEED := 250.0
 
 @export var player_index := 0
 
@@ -31,6 +35,10 @@ var jump_buffer_timer := 0.0
 var hurt_timer := 0.0
 var invincibility_timer := 0.0
 var is_invincible := false
+var _stuck_damage_timer := 0.0
+var _stuck_wiggle_count := 0
+var _stuck_last_dir := 0
+var _stuck_barrier_x := 0.0
 
 # References set in _ready
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -87,6 +95,8 @@ func _physics_process(delta: float) -> void:
 			_state_double_jump(delta)
 		State.HURT:
 			_state_hurt(delta)
+		State.STUCK:
+			_state_stuck(delta)
 		State.DEAD:
 			return
 
@@ -94,6 +104,10 @@ func _physics_process(delta: float) -> void:
 	_update_aim()
 
 	move_and_slide()
+
+	# Check if knockback slammed us into a barrier
+	if current_state == State.HURT:
+		_check_barrier_stuck()
 
 
 # --- State handlers ---
@@ -213,6 +227,57 @@ func _state_hurt(delta: float) -> void:
 			_change_state(State.FALL)
 
 	_update_sprite_animation("hurt")
+
+
+func _state_stuck(_delta: float) -> void:
+	velocity = Vector2.ZERO
+
+	# Periodic barrier damage (bypasses invincibility)
+	_stuck_damage_timer -= _delta
+	if _stuck_damage_timer <= 0:
+		_stuck_damage_timer = STUCK_DAMAGE_INTERVAL
+		health_component.take_damage(STUCK_DAMAGE)
+
+	# Jitter visual feedback — increases with wiggle progress
+	if sprite:
+		var jitter: float = remap(_stuck_wiggle_count, 0, STUCK_WIGGLES_TO_ESCAPE, 1.0, 4.0)
+		sprite.offset.x = randf_range(-jitter, jitter)
+
+	# Detect wiggle: alternating L/R inputs
+	var dir := _get_move_input()
+	if dir > 0.3 and _stuck_last_dir != 1:
+		_stuck_last_dir = 1
+		_stuck_wiggle_count += 1
+	elif dir < -0.3 and _stuck_last_dir != -1:
+		_stuck_last_dir = -1
+		_stuck_wiggle_count += 1
+
+	if _stuck_wiggle_count >= STUCK_WIGGLES_TO_ESCAPE:
+		# Burst free — always escape AWAY from the barrier
+		if sprite:
+			sprite.offset.x = 0.0
+		var escape_dir: float = sign(global_position.x - _stuck_barrier_x)
+		if escape_dir == 0.0:
+			escape_dir = 1.0
+		# Nudge clear of the collision
+		global_position.x += escape_dir * 20.0
+		velocity.x = escape_dir * STUCK_ESCAPE_SPEED
+		velocity.y = -150.0
+		invincibility_timer = INVINCIBILITY_DURATION
+		is_invincible = true
+		_change_state(State.FALL)
+		return
+
+	_update_sprite_animation("hurt")
+
+
+func _check_barrier_stuck() -> void:
+	# Player passes through barriers physically — detect overlap by proximity
+	for node in get_tree().get_nodes_in_group("barrier"):
+		if absf(global_position.x - node.global_position.x) < 16.0 and absf(global_position.y - node.global_position.y) < 40.0:
+			_stuck_barrier_x = node.global_position.x
+			_change_state(State.STUCK)
+			break
 
 
 # --- Movement helpers ---
@@ -338,6 +403,12 @@ func _enter_state(state: State) -> void:
 			hurt_timer = HURT_DURATION
 			invincibility_timer = INVINCIBILITY_DURATION
 			is_invincible = true
+		State.STUCK:
+			_stuck_damage_timer = STUCK_DAMAGE_INTERVAL
+			_stuck_wiggle_count = 0
+			_stuck_last_dir = 0
+			invincibility_timer = 0.0
+			is_invincible = false
 
 
 func _exit_state(_state: State) -> void:

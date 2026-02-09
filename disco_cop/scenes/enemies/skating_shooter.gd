@@ -28,6 +28,7 @@ func _ready() -> void:
 		enemy_data.attack_cooldown = 1.8
 		enemy_data.loot_chance = 0.30
 	super._ready()
+	collision_mask = 9  # World (1) + Barriers (8)
 
 	_projectile_scene = preload("res://scenes/weapons/projectile.tscn")
 	if ObjectPool.get_pool_size(PROJECTILE_POOL_NAME) == 0:
@@ -203,7 +204,7 @@ func _check_barrier_bounce() -> void:
 	for i in get_slide_collision_count():
 		var collision := get_slide_collision(i)
 		var collider := collision.get_collider()
-		if collider is Node and collider.is_in_group("barrier"):
+		if collider is Node and (collider.is_in_group("barrier") or collider.is_in_group("wall")):
 			velocity.x *= -BARRIER_BOUNCE
 			_stun_timer = STUN_DURATION
 			break

@@ -27,6 +27,7 @@ func _ready() -> void:
 		enemy_data.attack_cooldown = 1.2
 		enemy_data.loot_chance = 0.25
 	super._ready()
+	collision_mask = 9  # World (1) + Barriers (8)
 
 
 func _physics_process(delta: float) -> void:
@@ -181,7 +182,7 @@ func _check_barrier_bounce() -> void:
 	for i in get_slide_collision_count():
 		var collision := get_slide_collision(i)
 		var collider := collision.get_collider()
-		if collider is Node and collider.is_in_group("barrier"):
+		if collider is Node and (collider.is_in_group("barrier") or collider.is_in_group("wall")):
 			velocity.x *= -BARRIER_BOUNCE
 			_stun_timer = STUN_DURATION
 			_is_charging = false

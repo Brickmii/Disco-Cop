@@ -1,87 +1,123 @@
-[gd_scene load_steps=8 format=3 uid="uid://c2testlevel01"]
+[gd_scene load_steps=9 format=3 uid="uid://c2testlevel01"]
 
 [ext_resource type="PackedScene" uid="uid://c2player001" path="res://scenes/player/player.tscn" id="1_player_scene"]
 [ext_resource type="PackedScene" uid="uid://c2skatinggrunt01" path="res://scenes/enemies/skating_grunt.tscn" id="2_skating_grunt"]
 [ext_resource type="PackedScene" uid="uid://c2skatingshooter01" path="res://scenes/enemies/skating_shooter.tscn" id="3_skating_shooter"]
+[ext_resource type="Script" path="res://scenes/levels/test_level.gd" id="4_test_level_script"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
-size = Vector2(1280, 32)
+size = Vector2(5120, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
-size = Vector2(32, 200)
+size = Vector2(32, 720)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_barrier"]
-size = Vector2(16, 24)
+size = Vector2(16, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_platform"]
 size = Vector2(200, 16)
 
 [node name="TestLevel" type="Node2D"]
+script = ExtResource("4_test_level_script")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(640, 360)
+limit_left = 0
+limit_top = 0
+limit_right = 5120
+limit_bottom = 720
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
 
 [node name="Player" parent="." instance=ExtResource("1_player_scene")]
-position = Vector2(640, 688)
+position = Vector2(200, 688)
 
 [node name="Floor" type="StaticBody2D" parent="."]
-position = Vector2(640, 704)
+position = Vector2(2560, 704)
 collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
 shape = SubResource("RectangleShape2D_floor")
 
 [node name="FloorVisual" type="ColorRect" parent="Floor"]
-offset_left = -640.0
+offset_left = -2560.0
 offset_top = -16.0
-offset_right = 640.0
+offset_right = 2560.0
 offset_bottom = 16.0
 color = Color(0.55, 0.35, 0.2, 1)
 
-[node name="WallLeft" type="StaticBody2D" parent="." groups=["barrier"]]
-position = Vector2(-16, 588)
+[node name="WallLeft" type="StaticBody2D" parent="." groups=["wall"]]
+position = Vector2(-16, 360)
 collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
 shape = SubResource("RectangleShape2D_wall")
 
-[node name="Visual" type="ColorRect" parent="WallLeft"]
-offset_left = -16.0
-offset_top = -100.0
-offset_right = 16.0
-offset_bottom = 100.0
-color = Color(0.75, 0.75, 0.8, 1)
-
-[node name="WallRight" type="StaticBody2D" parent="." groups=["barrier"]]
-position = Vector2(1296, 588)
+[node name="WallRight" type="StaticBody2D" parent="." groups=["wall"]]
+position = Vector2(5136, 360)
 collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
 shape = SubResource("RectangleShape2D_wall")
 
-[node name="Visual" type="ColorRect" parent="WallRight"]
-offset_left = -16.0
-offset_top = -100.0
-offset_right = 16.0
-offset_bottom = 100.0
-color = Color(0.75, 0.75, 0.8, 1)
+[node name="Barrier1" type="StaticBody2D" parent="." groups=["barrier"]]
+position = Vector2(900, 664)
+collision_layer = 8
 
-[node name="BarrierMid" type="StaticBody2D" parent="." groups=["barrier"]]
-position = Vector2(640, 676)
-collision_layer = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="BarrierMid"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Barrier1"]
 shape = SubResource("RectangleShape2D_barrier")
 
-[node name="Visual" type="ColorRect" parent="BarrierMid"]
+[node name="Visual" type="ColorRect" parent="Barrier1"]
 offset_left = -8.0
-offset_top = -12.0
+offset_top = -24.0
 offset_right = 8.0
-offset_bottom = 12.0
+offset_bottom = 24.0
+color = Color(0.75, 0.75, 0.8, 1)
+
+[node name="Barrier2" type="StaticBody2D" parent="." groups=["barrier"]]
+position = Vector2(2000, 664)
+collision_layer = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Barrier2"]
+shape = SubResource("RectangleShape2D_barrier")
+
+[node name="Visual" type="ColorRect" parent="Barrier2"]
+offset_left = -8.0
+offset_top = -24.0
+offset_right = 8.0
+offset_bottom = 24.0
+color = Color(0.75, 0.75, 0.8, 1)
+
+[node name="Barrier3" type="StaticBody2D" parent="." groups=["barrier"]]
+position = Vector2(3200, 664)
+collision_layer = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Barrier3"]
+shape = SubResource("RectangleShape2D_barrier")
+
+[node name="Visual" type="ColorRect" parent="Barrier3"]
+offset_left = -8.0
+offset_top = -24.0
+offset_right = 8.0
+offset_bottom = 24.0
+color = Color(0.75, 0.75, 0.8, 1)
+
+[node name="Barrier4" type="StaticBody2D" parent="." groups=["barrier"]]
+position = Vector2(4300, 664)
+collision_layer = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Barrier4"]
+shape = SubResource("RectangleShape2D_barrier")
+
+[node name="Visual" type="ColorRect" parent="Barrier4"]
+offset_left = -8.0
+offset_top = -24.0
+offset_right = 8.0
+offset_bottom = 24.0
 color = Color(0.75, 0.75, 0.8, 1)
 
 [node name="Platform1" type="StaticBody2D" parent="."]
-position = Vector2(400, 550)
+position = Vector2(700, 550)
 collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Platform1"]
@@ -94,17 +130,74 @@ offset_right = 100.0
 offset_bottom = 8.0
 color = Color(0.5, 0.4, 0.3, 1)
 
+[node name="Platform2" type="StaticBody2D" parent="."]
+position = Vector2(1800, 520)
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform2"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="PlatformVisual" type="ColorRect" parent="Platform2"]
+offset_left = -100.0
+offset_top = -8.0
+offset_right = 100.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
+[node name="Platform3" type="StaticBody2D" parent="."]
+position = Vector2(3000, 550)
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform3"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="PlatformVisual" type="ColorRect" parent="Platform3"]
+offset_left = -100.0
+offset_top = -8.0
+offset_right = 100.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
+[node name="Platform4" type="StaticBody2D" parent="."]
+position = Vector2(4200, 530)
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform4"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="PlatformVisual" type="ColorRect" parent="Platform4"]
+offset_left = -100.0
+offset_top = -8.0
+offset_right = 100.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
 [node name="SkatingGrunt1" parent="." instance=ExtResource("2_skating_grunt")]
-position = Vector2(900, 688)
+position = Vector2(800, 688)
 
 [node name="SkatingGrunt2" parent="." instance=ExtResource("2_skating_grunt")]
-position = Vector2(200, 688)
+position = Vector2(1500, 688)
 
 [node name="SkatingShooter1" parent="." instance=ExtResource("3_skating_shooter")]
-position = Vector2(1100, 688)
+position = Vector2(1200, 688)
+
+[node name="SkatingGrunt3" parent="." instance=ExtResource("2_skating_grunt")]
+position = Vector2(2400, 688)
+
+[node name="SkatingShooter2" parent="." instance=ExtResource("3_skating_shooter")]
+position = Vector2(2800, 688)
+
+[node name="SkatingGrunt4" parent="." instance=ExtResource("2_skating_grunt")]
+position = Vector2(3500, 688)
+
+[node name="SkatingShooter3" parent="." instance=ExtResource("3_skating_shooter")]
+position = Vector2(3900, 688)
+
+[node name="SkatingGrunt5" parent="." instance=ExtResource("2_skating_grunt")]
+position = Vector2(4600, 688)
 
 [node name="Background" type="ColorRect" parent="."]
 z_index = -10
-offset_right = 1280.0
+offset_right = 5120.0
 offset_bottom = 720.0
 color = Color(0.1, 0.05, 0.15, 1)

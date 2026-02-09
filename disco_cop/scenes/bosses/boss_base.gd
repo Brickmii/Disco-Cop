@@ -21,7 +21,7 @@ const GRAVITY := 980.0
 
 func _ready() -> void:
 	current_health = max_health
-	collision_layer = 3  # Enemies
+	collision_layer = 4  # Enemies (bit 3)
 	collision_mask = 1   # World
 	add_to_group("bosses")
 	EventBus.boss_spawned.emit(self)

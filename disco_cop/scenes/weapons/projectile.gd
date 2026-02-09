@@ -85,9 +85,12 @@ func get_final_damage() -> float:
 
 
 func _on_body_entered(body: Node2D) -> void:
+	# Projectiles pass through barriers and walls
+	if body.is_in_group("barrier") or body.is_in_group("wall"):
+		return
 	if body.has_method("take_damage"):
 		body.take_damage(get_final_damage(), global_position)
-	_emit_hit()
+		_emit_hit()
 	_deactivate()
 
 

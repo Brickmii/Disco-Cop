@@ -1,0 +1,104 @@
+[gd_scene load_steps=8 format=3 uid="uid://c2player001"]
+
+[ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scenes/weapons/weapon_holder.gd" id="2_weapon_holder"]
+[ext_resource type="Script" path="res://scenes/player/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://scenes/player/shield_component.gd" id="4_shield"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(24, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_player"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": true,
+"name": &"run",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"fall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"double_jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aim"]
+size = Vector2(20, 4)
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -24)
+shape = SubResource("RectangleShape2D_player")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -24)
+sprite_frames = SubResource("SpriteFrames_player")
+
+[node name="BodyRect" type="ColorRect" parent="."]
+z_index = -1
+offset_left = -12.0
+offset_top = -48.0
+offset_right = 12.0
+offset_bottom = 0.0
+color = Color(0.2, 0.8, 0.3, 1)
+
+[node name="AimIndicator" type="Node2D" parent="."]
+position = Vector2(0, -30)
+
+[node name="AimLine" type="ColorRect" parent="AimIndicator"]
+offset_left = 0.0
+offset_top = -2.0
+offset_right = 24.0
+offset_bottom = 2.0
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="WeaponHolder" type="Node2D" parent="."]
+position = Vector2(0, -30)
+script = ExtResource("2_weapon_holder")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_health")
+
+[node name="ShieldComponent" type="Node" parent="."]
+script = ExtResource("4_shield")

@@ -1,0 +1,31 @@
+# Godot 4+ specific ignores
+disco_cop/.godot/
+
+# Godot-specific ignores
+*.translation
+
+# Imported resources
+disco_cop/.import/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Blender temp files
+*.blend1
+*.blend2
+
+# Build
+disco_cop/export*/

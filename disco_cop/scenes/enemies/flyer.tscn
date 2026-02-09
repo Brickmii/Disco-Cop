@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://c2flyer001"]
+
+[ext_resource type="Script" path="res://scenes/enemies/flyer.gd" id="1_flyer"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_flyer"]
+size = Vector2(24, 24)
+
+[node name="Flyer" type="CharacterBody2D"]
+collision_layer = 3
+collision_mask = 1
+script = ExtResource("1_flyer")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -12)
+shape = SubResource("RectangleShape2D_flyer")
+
+[node name="Visual" type="ColorRect" parent="."]
+offset_left = -12.0
+offset_top = -24.0
+offset_right = 12.0
+offset_bottom = 0.0
+color = Color(0.6, 0.2, 0.8, 1)
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

@@ -1,9 +1,44 @@
-[gd_scene load_steps=3 format=3 uid="uid://c2grunt001"]
+[gd_scene load_steps=4 format=3 uid="uid://c2grunt001"]
 
 [ext_resource type="Script" path="res://scenes/enemies/grunt.gd" id="1_grunt"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_grunt"]
 size = Vector2(20, 40)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_grunt"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"attack",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": null
+}],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
 
 [node name="Grunt" type="CharacterBody2D"]
 collision_layer = 3
@@ -14,11 +49,8 @@ script = ExtResource("1_grunt")
 position = Vector2(0, -20)
 shape = SubResource("RectangleShape2D_grunt")
 
-[node name="Visual" type="ColorRect" parent="."]
-offset_left = -10.0
-offset_top = -40.0
-offset_right = 10.0
-offset_bottom = 0.0
-color = Color(0.8, 0.2, 0.2, 1)
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -20)
+sprite_frames = SubResource("SpriteFrames_grunt")
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

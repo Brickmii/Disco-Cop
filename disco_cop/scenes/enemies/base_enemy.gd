@@ -18,6 +18,8 @@ var _patrol_timer := 0.0
 const HURT_DURATION := 0.2
 const GRAVITY := 980.0
 
+@onready var sprite: AnimatedSprite2D = get_node_or_null("Sprite")
+
 
 func _ready() -> void:
 	# Create health component
@@ -74,11 +76,13 @@ func _state_idle(delta: float) -> void:
 		_change_state(State.PATROL)
 	if _target and _distance_to_target() < enemy_data.detection_range:
 		_change_state(State.CHASE)
+	_play_sprite_animation(_get_idle_animation())
 
 
 func _state_patrol(delta: float) -> void:
 	velocity.x = _patrol_direction * enemy_data.move_speed * 0.5
 	facing_right = _patrol_direction > 0
+	_update_sprite_facing()
 
 	_patrol_timer -= delta
 	if _patrol_timer <= 0:
@@ -92,6 +96,7 @@ func _state_patrol(delta: float) -> void:
 
 	if _target and _distance_to_target() < enemy_data.detection_range:
 		_change_state(State.CHASE)
+	_play_sprite_animation(_get_walk_animation())
 
 
 func _state_chase(delta: float) -> void:
@@ -102,11 +107,13 @@ func _state_chase(delta: float) -> void:
 	var dir: float = sign(_target.global_position.x - global_position.x)
 	velocity.x = dir * enemy_data.move_speed
 	facing_right = dir > 0
+	_update_sprite_facing()
 
 	if _distance_to_target() < enemy_data.attack_range:
 		_change_state(State.ATTACK)
 	elif _distance_to_target() > enemy_data.detection_range * 1.5:
 		_change_state(State.PATROL)
+	_play_sprite_animation(_get_walk_animation())
 
 
 func _state_attack(delta: float) -> void:
@@ -118,9 +125,11 @@ func _state_attack(delta: float) -> void:
 
 	if _target == null or _distance_to_target() > enemy_data.attack_range * 1.5:
 		_change_state(State.CHASE)
+	_play_sprite_animation(_get_attack_animation())
 
 
 func _state_hurt(_delta: float) -> void:
+	_play_sprite_animation("hurt")
 	if _hurt_timer <= 0:
 		if _target and _distance_to_target() < enemy_data.attack_range * 1.5:
 			_change_state(State.ATTACK)
@@ -149,10 +158,11 @@ func take_damage(amount: float, _source_position: Vector2 = Vector2.ZERO) -> voi
 	_change_state(State.HURT)
 	EventBus.enemy_hit.emit(self, amount, 0)
 
-	# Visual feedback: flash white
-	modulate = Color.WHITE * 3.0
+	# Visual feedback: flash white on sprite if available, else whole node
+	var flash_target: Node = sprite if sprite else self
+	flash_target.modulate = Color.WHITE * 3.0
 	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+	tween.tween_property(flash_target, "modulate", Color.WHITE, 0.1)
 
 
 func _on_died() -> void:
@@ -167,9 +177,10 @@ func _on_died() -> void:
 
 	EventBus.enemy_died.emit(self, global_position)
 
-	# Death animation (simple fade)
+	# Play death animation then fade out
+	_play_sprite_animation("death")
 	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	tween.tween_property(self, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(queue_free)
 
 
@@ -206,3 +217,28 @@ func _enter_state(state: State) -> void:
 
 func _exit_state(_state: State) -> void:
 	pass
+
+
+# --- Sprite helpers (overridable for enemy-specific animations) ---
+
+func _play_sprite_animation(anim_name: String) -> void:
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
+		if sprite.animation != anim_name:
+			sprite.play(anim_name)
+
+
+func _update_sprite_facing() -> void:
+	if sprite:
+		sprite.flip_h = not facing_right
+
+
+func _get_idle_animation() -> String:
+	return "walk"
+
+
+func _get_walk_animation() -> String:
+	return "walk"
+
+
+func _get_attack_animation() -> String:
+	return "attack"

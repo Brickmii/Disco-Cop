@@ -35,6 +35,7 @@ func _state_chase(delta: float) -> void:
 	var dist := _distance_to_target()
 	var dir: float = sign(_target.global_position.x - global_position.x)
 	facing_right = dir > 0
+	_update_sprite_facing()
 
 	# Try to maintain preferred distance
 	if dist < PREFERRED_DISTANCE * 0.7:
@@ -48,6 +49,7 @@ func _state_chase(delta: float) -> void:
 		_change_state(State.ATTACK)
 	elif dist > enemy_data.detection_range * 1.5:
 		_change_state(State.PATROL)
+	_play_sprite_animation("walk")
 
 
 func _perform_attack() -> void:
@@ -73,3 +75,11 @@ func _perform_attack() -> void:
 	# Override collision to hit players instead of enemies
 	proj.collision_layer = 5  # EnemyProjectiles
 	proj.collision_mask = 2   # Players
+
+
+func _get_idle_animation() -> String:
+	return "idle"
+
+
+func _get_attack_animation() -> String:
+	return "shoot"

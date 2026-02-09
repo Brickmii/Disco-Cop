@@ -17,7 +17,21 @@ var lifetime := 0.0
 var max_lifetime := 3.0
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var visual: ColorRect = $Visual
+@onready var sprite: Sprite2D = $Sprite
+
+# Preloaded projectile textures — null until PNGs exist in assets/sprites/weapons/
+static var _tex_bullet: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_bullet.png")
+static var _tex_fire: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_fire.png")
+static var _tex_ice: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_ice.png")
+static var _tex_electric: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_electric.png")
+static var _tex_explosive: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_explosive.png")
+static var _tex_enemy: Texture2D = _load_tex("res://assets/sprites/weapons/projectile_enemy.png")
+
+
+static func _load_tex(path: String) -> Texture2D:
+	if ResourceLoader.exists(path):
+		return load(path)
+	return null
 
 
 func _ready() -> void:
@@ -42,14 +56,8 @@ func activate(pos: Vector2, dir: Vector2, weapon: WeaponData, player_idx: int, c
 	lifetime = 0.0
 	max_lifetime = 3.0
 
-	# Visual color by element
-	if visual:
-		match element:
-			WeaponData.Element.NONE: visual.color = Color.WHITE
-			WeaponData.Element.FIRE: visual.color = Color.ORANGE_RED
-			WeaponData.Element.ICE: visual.color = Color.LIGHT_BLUE
-			WeaponData.Element.ELECTRIC: visual.color = Color.YELLOW
-			WeaponData.Element.EXPLOSIVE: visual.color = Color.DARK_RED
+	# Set texture by element, fall back to color tinting if no texture
+	_update_projectile_visual()
 
 	# Scale for weapon projectile_size
 	var s := weapon.projectile_size
@@ -88,6 +96,36 @@ func _on_area_entered(area: Area2D) -> void:
 	if area.has_method("receive_hit"):
 		area.receive_hit(self)
 		_deactivate()
+
+
+func _update_projectile_visual() -> void:
+	if sprite == null:
+		return
+
+	# Try to set texture by element
+	var tex: Texture2D = null
+	match element:
+		WeaponData.Element.NONE: tex = _tex_bullet
+		WeaponData.Element.FIRE: tex = _tex_fire
+		WeaponData.Element.ICE: tex = _tex_ice
+		WeaponData.Element.ELECTRIC: tex = _tex_electric
+		WeaponData.Element.EXPLOSIVE: tex = _tex_explosive
+
+	# Enemy projectile (player_index == -1 and not player-owned)
+	if owner_player_index < 0 and _tex_enemy:
+		tex = _tex_enemy
+
+	if tex:
+		sprite.texture = tex
+		sprite.modulate = Color.WHITE
+	else:
+		# Fallback: tint a blank sprite by element color
+		match element:
+			WeaponData.Element.NONE: sprite.modulate = Color.WHITE
+			WeaponData.Element.FIRE: sprite.modulate = Color.ORANGE_RED
+			WeaponData.Element.ICE: sprite.modulate = Color.LIGHT_BLUE
+			WeaponData.Element.ELECTRIC: sprite.modulate = Color.YELLOW
+			WeaponData.Element.EXPLOSIVE: sprite.modulate = Color.DARK_RED
 
 
 func _emit_hit() -> void:

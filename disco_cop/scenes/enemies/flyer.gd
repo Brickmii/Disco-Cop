@@ -38,6 +38,8 @@ func _state_patrol(delta: float) -> void:
 	velocity.x = sin(_hover_offset) * HOVER_SPEED
 	velocity.y = cos(_hover_offset * 1.5) * HOVER_SPEED * 0.5
 	facing_right = velocity.x > 0
+	_update_sprite_facing()
+	_play_sprite_animation("fly")
 
 	if _target and _distance_to_target() < enemy_data.detection_range:
 		_change_state(State.CHASE)
@@ -53,6 +55,8 @@ func _state_chase(delta: float) -> void:
 	var dir := (target_pos - global_position).normalized()
 	velocity = dir * enemy_data.move_speed
 	facing_right = _target.global_position.x > global_position.x
+	_update_sprite_facing()
+	_play_sprite_animation("fly")
 
 	if _distance_to_target() < enemy_data.attack_range:
 		_change_state(State.ATTACK)
@@ -89,6 +93,14 @@ func _perform_attack() -> void:
 	_swoop_target = _target.global_position
 	_is_swooping = true
 	_swoop_timer = 1.0
+
+
+func _get_idle_animation() -> String:
+	return "fly"
+
+
+func _get_walk_animation() -> String:
+	return "fly"
 
 
 func take_damage(amount: float, source_position: Vector2 = Vector2.ZERO) -> void:

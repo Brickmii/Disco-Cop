@@ -16,6 +16,8 @@ var _target: Node2D = null
 
 const GRAVITY := 980.0
 
+@onready var sprite: AnimatedSprite2D = get_node_or_null("Sprite")
+
 
 func _ready() -> void:
 	current_health = max_health
@@ -50,9 +52,10 @@ func take_damage(amount: float, _source_position: Vector2 = Vector2.ZERO) -> voi
 	EventBus.enemy_hit.emit(self, amount, 0)
 
 	# Visual hit feedback
-	modulate = Color(3, 3, 3)
+	var flash_target: Node = sprite if sprite else self
+	flash_target.modulate = Color(3, 3, 3)
 	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+	tween.tween_property(flash_target, "modulate", Color.WHITE, 0.1)
 
 	# Check phase transitions
 	var health_pct := current_health / max_health
@@ -80,7 +83,8 @@ func _die() -> void:
 	for drop in drops:
 		EventBus.loot_dropped.emit(null, global_position + Vector2(randf_range(-40, 40), 0))
 
-	# Death effect
+	# Play death animation then fade out
+	_play_sprite_animation("death")
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 1.0)
 	tween.tween_callback(queue_free)
@@ -104,3 +108,14 @@ func _find_closest_player() -> Node2D:
 
 func get_health_percent() -> float:
 	return current_health / max_health
+
+
+func _play_sprite_animation(anim_name: String) -> void:
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
+		if sprite.animation != anim_name:
+			sprite.play(anim_name)
+
+
+func _update_sprite_facing() -> void:
+	if sprite:
+		sprite.flip_h = not (_target == null or _target.global_position.x >= global_position.x)

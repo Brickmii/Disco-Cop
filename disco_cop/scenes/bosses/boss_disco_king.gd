@@ -33,6 +33,8 @@ func _ready() -> void:
 
 
 func _update_boss(delta: float) -> void:
+	_update_sprite_facing()
+
 	if _is_attacking:
 		_update_attack(delta)
 		return
@@ -45,6 +47,7 @@ func _update_boss(delta: float) -> void:
 	if _target:
 		var dir: float = sign(_target.global_position.x - global_position.x)
 		velocity.x = dir * MOVE_SPEED * 0.5
+	_play_sprite_animation("idle")
 
 
 func _start_next_attack() -> void:
@@ -105,6 +108,7 @@ func _update_attack(delta: float) -> void:
 
 
 func _attack_disco_ball(_delta: float) -> void:
+	_play_sprite_animation("disco_ball")
 	# Fire projectiles in a radial pattern at the start
 	if _pattern_timer < 0.1:
 		for i in DISCO_BALL_COUNT:
@@ -115,6 +119,7 @@ func _attack_disco_ball(_delta: float) -> void:
 
 
 func _attack_ground_slam(_delta: float) -> void:
+	_play_sprite_animation("slam")
 	if _pattern_timer < 0.5:
 		# Telegraph: rise up
 		velocity.y = -200.0
@@ -129,6 +134,7 @@ func _attack_ground_slam(_delta: float) -> void:
 
 
 func _attack_laser_sweep(_delta: float) -> void:
+	_play_sprite_animation("laser")
 	# Sweep a "laser" (fast projectiles) across the arena
 	if _pattern_timer < 2.0:
 		_laser_angle += _delta * PI * 0.5  # Half-circle over 2 seconds
@@ -151,17 +157,18 @@ func _attack_floor_pattern(_delta: float) -> void:
 
 
 func _attack_enrage_rush(_delta: float) -> void:
+	var flash_target: Node = sprite if sprite else self
 	if _pattern_timer < 0.3:
 		# Telegraph
 		velocity.x = 0.0
-		modulate = Color(1.5, 0.5, 0.5)
+		flash_target.modulate = Color(1.5, 0.5, 0.5)
 	elif _pattern_timer < 1.5:
 		# Rush toward player
 		if _target and _pattern_timer < 0.4:
 			_rush_direction = sign(_target.global_position.x - global_position.x)
 		velocity.x = _rush_direction * RUSH_SPEED
 	else:
-		modulate = Color.WHITE
+		flash_target.modulate = Color.WHITE
 		_end_attack()
 
 
@@ -200,6 +207,7 @@ func _end_attack() -> void:
 
 func _on_phase_change(phase: int) -> void:
 	# Visual feedback on phase change
+	var flash_target: Node = sprite if sprite else self
 	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color(2, 0.5, 2), 0.2)
-	tween.tween_property(self, "modulate", Color.WHITE, 0.3)
+	tween.tween_property(flash_target, "modulate", Color(2, 0.5, 2), 0.2)
+	tween.tween_property(flash_target, "modulate", Color.WHITE, 0.3)

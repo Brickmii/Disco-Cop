@@ -75,14 +75,6 @@ shape = SubResource("RectangleShape2D_player")
 position = Vector2(0, -24)
 sprite_frames = SubResource("SpriteFrames_player")
 
-[node name="BodyRect" type="ColorRect" parent="."]
-z_index = -1
-offset_left = -12.0
-offset_top = -48.0
-offset_right = 12.0
-offset_bottom = 0.0
-color = Color(0.2, 0.8, 0.3, 1)
-
 [node name="AimIndicator" type="Node2D" parent="."]
 position = Vector2(0, -30)
 

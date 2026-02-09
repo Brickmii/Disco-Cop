@@ -6,8 +6,20 @@ var drop_data: Dictionary = {}  # {type: LootTable.DropType, data: Resource}
 var _bob_offset := 0.0
 var _initial_y := 0.0
 
-@onready var visual: ColorRect = $Visual
+@onready var sprite: Sprite2D = $Sprite
 @onready var label: Label = $Label
+
+# Preloaded loot textures — null until PNGs exist in assets/sprites/ui/
+static var _tex_weapon: Texture2D = _load_tex("res://assets/sprites/ui/loot_weapon.png")
+static var _tex_shield: Texture2D = _load_tex("res://assets/sprites/ui/loot_shield.png")
+static var _tex_health: Texture2D = _load_tex("res://assets/sprites/ui/loot_health.png")
+static var _tex_ammo: Texture2D = _load_tex("res://assets/sprites/ui/loot_ammo.png")
+
+
+static func _load_tex(path: String) -> Texture2D:
+	if ResourceLoader.exists(path):
+		return load(path)
+	return null
 
 
 func _ready() -> void:
@@ -35,9 +47,18 @@ func _process(delta: float) -> void:
 
 
 func _update_visual() -> void:
-	if visual == null:
-		return
+	# Set texture by drop type
+	if sprite and drop_data.has("type"):
+		var tex: Texture2D = null
+		match drop_data["type"]:
+			LootTable.DropType.WEAPON: tex = _tex_weapon
+			LootTable.DropType.SHIELD: tex = _tex_shield
+			LootTable.DropType.HEALTH: tex = _tex_health
+			LootTable.DropType.AMMO: tex = _tex_ammo
+		if tex:
+			sprite.texture = tex
 
+	# Rarity color via modulate (sprites should be white/neutral base)
 	var color := Color.WHITE
 	if drop_data.has("data") and drop_data["data"] != null:
 		var data: Resource = drop_data["data"]
@@ -49,9 +70,10 @@ func _update_visual() -> void:
 				color = Color.GREEN
 			LootTable.DropType.AMMO:
 				color = Color.DARK_CYAN
-	visual.color = color
+	if sprite:
+		sprite.modulate = color
 
-	# Label
+	# Label (kept as fallback when no textures yet)
 	if label and drop_data.has("type"):
 		match drop_data["type"]:
 			LootTable.DropType.WEAPON:

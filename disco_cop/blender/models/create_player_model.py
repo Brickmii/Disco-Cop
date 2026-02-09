@@ -100,7 +100,7 @@ def create_body_meshes(mats):
 
     # --- HEAD ---
     bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=12, ring_count=8, radius=0.18,
+        segments=12, ring_count=8, radius=0.24,
         location=(0, 0, 1.38))
     head = bpy.context.active_object
     head.name = 'Head'
@@ -110,7 +110,7 @@ def create_body_meshes(mats):
 
     # --- AFRO ---
     bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=12, ring_count=8, radius=0.28,
+        segments=12, ring_count=8, radius=0.35,
         location=(0, 0, 1.50))
     afro = bpy.context.active_object
     afro.name = 'Afro'
@@ -122,7 +122,7 @@ def create_body_meshes(mats):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0.15, 0, 1.40))
     glasses = bpy.context.active_object
     glasses.name = 'Sunglasses'
-    glasses.scale = (0.06, 0.22, 0.05)
+    glasses.scale = (0.12, 0.22, 0.05)
     bpy.ops.object.transform_apply(scale=True)
     assign_material(glasses, mats['sunglasses'])
     parts['sunglasses'] = glasses
@@ -131,13 +131,13 @@ def create_body_meshes(mats):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.95))
     torso = bpy.context.active_object
     torso.name = 'Torso'
-    torso.scale = (0.22, 0.30, 0.28)
+    torso.scale = (0.48, 0.35, 0.28)
     bpy.ops.object.transform_apply(scale=True)
     assign_material(torso, mats['jacket'])
     parts['torso'] = torso
 
     # --- BADGE ---
-    bpy.ops.mesh.primitive_plane_add(size=0.08, location=(0.23, 0.05, 1.0))
+    bpy.ops.mesh.primitive_plane_add(size=0.08, location=(0.50, 0.05, 1.0))
     badge = bpy.context.active_object
     badge.name = 'Badge'
     badge.rotation_euler = (0, math.radians(90), 0)
@@ -147,54 +147,54 @@ def create_body_meshes(mats):
 
     # --- LEFT UPPER ARM ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.06, depth=0.30, location=(0, 0.33, 1.05))
+        vertices=8, radius=0.12, depth=0.30, location=(0, 0.33, 1.05))
     parts['upper_arm_l'] = bpy.context.active_object
     parts['upper_arm_l'].name = 'UpperArm.L'
     assign_material(parts['upper_arm_l'], mats['jacket'])
 
     # --- LEFT LOWER ARM ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.05, depth=0.25, location=(0, 0.33, 0.78))
+        vertices=8, radius=0.10, depth=0.25, location=(0, 0.33, 0.78))
     parts['lower_arm_l'] = bpy.context.active_object
     parts['lower_arm_l'].name = 'LowerArm.L'
     assign_material(parts['lower_arm_l'], mats['skin'])
 
     # --- LEFT HAND ---
-    bpy.ops.mesh.primitive_cube_add(size=0.08, location=(0, 0.33, 0.63))
+    bpy.ops.mesh.primitive_cube_add(size=0.14, location=(0, 0.33, 0.63))
     parts['hand_l'] = bpy.context.active_object
     parts['hand_l'].name = 'Hand.L'
     assign_material(parts['hand_l'], mats['hands'])
 
     # --- RIGHT UPPER ARM ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.06, depth=0.30, location=(0, -0.33, 1.05))
+        vertices=8, radius=0.12, depth=0.30, location=(0, -0.33, 1.05))
     parts['upper_arm_r'] = bpy.context.active_object
     parts['upper_arm_r'].name = 'UpperArm.R'
     assign_material(parts['upper_arm_r'], mats['jacket'])
 
     # --- RIGHT LOWER ARM ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.05, depth=0.25, location=(0, -0.33, 0.78))
+        vertices=8, radius=0.10, depth=0.25, location=(0, -0.33, 0.78))
     parts['lower_arm_r'] = bpy.context.active_object
     parts['lower_arm_r'].name = 'LowerArm.R'
     assign_material(parts['lower_arm_r'], mats['skin'])
 
     # --- RIGHT HAND ---
-    bpy.ops.mesh.primitive_cube_add(size=0.08, location=(0, -0.33, 0.63))
+    bpy.ops.mesh.primitive_cube_add(size=0.14, location=(0, -0.33, 0.63))
     parts['hand_r'] = bpy.context.active_object
     parts['hand_r'].name = 'Hand.R'
     assign_material(parts['hand_r'], mats['hands'])
 
     # --- LEFT UPPER LEG ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.07, depth=0.30, location=(0, 0.12, 0.52))
+        vertices=8, radius=0.14, depth=0.30, location=(0, 0.12, 0.52))
     parts['upper_leg_l'] = bpy.context.active_object
     parts['upper_leg_l'].name = 'UpperLeg.L'
     assign_material(parts['upper_leg_l'], mats['pants'])
 
     # --- LEFT LOWER LEG (bell-bottom flare) ---
     bpy.ops.mesh.primitive_cone_add(
-        vertices=8, radius1=0.12, radius2=0.06, depth=0.30,
+        vertices=8, radius1=0.22, radius2=0.14, depth=0.30,
         location=(0, 0.12, 0.22))
     parts['lower_leg_l'] = bpy.context.active_object
     parts['lower_leg_l'].name = 'LowerLeg.L'
@@ -204,20 +204,20 @@ def create_body_meshes(mats):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0.03, 0.12, 0.06))
     parts['boot_l'] = bpy.context.active_object
     parts['boot_l'].name = 'Boot.L'
-    parts['boot_l'].scale = (0.14, 0.10, 0.06)
+    parts['boot_l'].scale = (0.26, 0.10, 0.06)
     bpy.ops.object.transform_apply(scale=True)
     assign_material(parts['boot_l'], mats['boots'])
 
     # --- RIGHT UPPER LEG ---
     bpy.ops.mesh.primitive_cylinder_add(
-        vertices=8, radius=0.07, depth=0.30, location=(0, -0.12, 0.52))
+        vertices=8, radius=0.14, depth=0.30, location=(0, -0.12, 0.52))
     parts['upper_leg_r'] = bpy.context.active_object
     parts['upper_leg_r'].name = 'UpperLeg.R'
     assign_material(parts['upper_leg_r'], mats['pants'])
 
     # --- RIGHT LOWER LEG (bell-bottom flare) ---
     bpy.ops.mesh.primitive_cone_add(
-        vertices=8, radius1=0.12, radius2=0.06, depth=0.30,
+        vertices=8, radius1=0.22, radius2=0.14, depth=0.30,
         location=(0, -0.12, 0.22))
     parts['lower_leg_r'] = bpy.context.active_object
     parts['lower_leg_r'].name = 'LowerLeg.R'
@@ -227,7 +227,7 @@ def create_body_meshes(mats):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0.03, -0.12, 0.06))
     parts['boot_r'] = bpy.context.active_object
     parts['boot_r'].name = 'Boot.R'
-    parts['boot_r'].scale = (0.14, 0.10, 0.06)
+    parts['boot_r'].scale = (0.26, 0.10, 0.06)
     bpy.ops.object.transform_apply(scale=True)
     assign_material(parts['boot_r'], mats['boots'])
 

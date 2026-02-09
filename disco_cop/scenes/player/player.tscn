@@ -1,6 +1,7 @@
-[gd_scene load_steps=33 format=3 uid="uid://c2player001"]
+[gd_scene load_steps=34 format=3 uid="uid://c2player001"]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gun.png" id="11_gun"]
 [ext_resource type="Script" path="res://scenes/weapons/weapon_holder.gd" id="2_weapon_holder"]
 [ext_resource type="Script" path="res://scenes/player/health_component.gd" id="3_health"]
 [ext_resource type="Script" path="res://scenes/player/shield_component.gd" id="4_shield"]
@@ -220,12 +221,10 @@ sprite_frames = SubResource("SpriteFrames_player")
 [node name="AimIndicator" type="Node2D" parent="."]
 position = Vector2(0, -30)
 
-[node name="AimLine" type="ColorRect" parent="AimIndicator"]
-offset_left = 0.0
-offset_top = -2.0
-offset_right = 24.0
-offset_bottom = 2.0
-color = Color(1, 0.2, 0.2, 1)
+[node name="AimLine" type="Sprite2D" parent="AimIndicator"]
+texture = ExtResource("11_gun")
+offset = Vector2(12, 0)
+texture_filter = 0
 
 [node name="WeaponHolder" type="Node2D" parent="."]
 position = Vector2(0, -30)

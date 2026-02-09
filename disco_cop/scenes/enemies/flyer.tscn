@@ -7,59 +7,59 @@
 [ext_resource type="Texture2D" uid="uid://8j03ad510v2q" path="res://assets/sprites/enemies/flyer_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_flyer"]
-size = Vector2(24, 24)
+size = Vector2(156, 156)
 
 [sub_resource type="AtlasTexture" id="fly_0"]
 atlas = ExtResource("2_fly_sheet")
-region = Rect2(0, 0, 24, 24)
+region = Rect2(0, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="fly_1"]
 atlas = ExtResource("2_fly_sheet")
-region = Rect2(24, 0, 24, 24)
+region = Rect2(156, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="fly_2"]
 atlas = ExtResource("2_fly_sheet")
-region = Rect2(48, 0, 24, 24)
+region = Rect2(312, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="fly_3"]
 atlas = ExtResource("2_fly_sheet")
-region = Rect2(72, 0, 24, 24)
+region = Rect2(468, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="attack_0"]
 atlas = ExtResource("3_attack_sheet")
-region = Rect2(0, 0, 24, 24)
+region = Rect2(0, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="attack_1"]
 atlas = ExtResource("3_attack_sheet")
-region = Rect2(24, 0, 24, 24)
+region = Rect2(156, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="attack_2"]
 atlas = ExtResource("3_attack_sheet")
-region = Rect2(48, 0, 24, 24)
+region = Rect2(312, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="hurt_0"]
 atlas = ExtResource("4_hurt_sheet")
-region = Rect2(0, 0, 24, 24)
+region = Rect2(0, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="hurt_1"]
 atlas = ExtResource("4_hurt_sheet")
-region = Rect2(24, 0, 24, 24)
+region = Rect2(156, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="death_0"]
 atlas = ExtResource("5_death_sheet")
-region = Rect2(0, 0, 24, 24)
+region = Rect2(0, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="death_1"]
 atlas = ExtResource("5_death_sheet")
-region = Rect2(24, 0, 24, 24)
+region = Rect2(156, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="death_2"]
 atlas = ExtResource("5_death_sheet")
-region = Rect2(48, 0, 24, 24)
+region = Rect2(312, 0, 156, 156)
 
 [sub_resource type="AtlasTexture" id="death_3"]
 atlas = ExtResource("5_death_sheet")
-region = Rect2(72, 0, 24, 24)
+region = Rect2(468, 0, 156, 156)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_flyer"]
 animations = [{
@@ -129,11 +129,11 @@ collision_mask = 1
 script = ExtResource("1_flyer")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -12)
+position = Vector2(0, -78)
 shape = SubResource("RectangleShape2D_flyer")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
-position = Vector2(0, -12)
+position = Vector2(0, -78)
 sprite_frames = SubResource("SpriteFrames_flyer")
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

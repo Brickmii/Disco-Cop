@@ -38,8 +38,12 @@ func get_device_for_player(player_index: int) -> int:
 func is_action_pressed(player_index: int, action: String) -> bool:
 	var device_id: int = player_to_device.get(player_index, -1)
 	if device_id == -1:
-		# Keyboard player
-		return Input.is_action_pressed(action)
+		# Keyboard player — also check first gamepad
+		if Input.is_action_pressed(action):
+			return true
+		if Input.get_connected_joypads().size() > 0:
+			return _is_gamepad_action_pressed(0, action)
+		return false
 	else:
 		# Gamepad player - check device-specific input
 		return _is_gamepad_action_pressed(device_id, action)
@@ -48,7 +52,11 @@ func is_action_pressed(player_index: int, action: String) -> bool:
 func is_action_just_pressed(player_index: int, action: String) -> bool:
 	var device_id: int = player_to_device.get(player_index, -1)
 	if device_id == -1:
-		return Input.is_action_just_pressed(action)
+		if Input.is_action_just_pressed(action):
+			return true
+		if Input.get_connected_joypads().size() > 0:
+			return _is_gamepad_action_just_pressed(0, action)
+		return false
 	else:
 		return _is_gamepad_action_just_pressed(device_id, action)
 
@@ -56,7 +64,17 @@ func is_action_just_pressed(player_index: int, action: String) -> bool:
 func get_axis(player_index: int, negative_action: String, positive_action: String) -> float:
 	var device_id: int = player_to_device.get(player_index, -1)
 	if device_id == -1:
-		return Input.get_axis(negative_action, positive_action)
+		var kb_axis := Input.get_axis(negative_action, positive_action)
+		if absf(kb_axis) > 0.1:
+			return kb_axis
+		# Fall through to first gamepad
+		if Input.get_connected_joypads().size() > 0:
+			var neg := 1.0 if _is_gamepad_action_pressed(0, negative_action) else 0.0
+			var pos := 1.0 if _is_gamepad_action_pressed(0, positive_action) else 0.0
+			var gp_axis := pos - neg
+			if absf(gp_axis) > 0.1:
+				return gp_axis
+		return kb_axis
 	else:
 		var neg := 1.0 if _is_gamepad_action_pressed(device_id, negative_action) else 0.0
 		var pos := 1.0 if _is_gamepad_action_pressed(device_id, positive_action) else 0.0

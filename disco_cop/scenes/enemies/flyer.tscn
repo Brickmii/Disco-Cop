@@ -1,10 +1,10 @@
 [gd_scene load_steps=19 format=3 uid="uid://c2flyer001"]
 
 [ext_resource type="Script" path="res://scenes/enemies/flyer.gd" id="1_flyer"]
-[ext_resource type="Texture2D" uid="uid://flyer_fly01" path="res://assets/sprites/enemies/flyer_fly_sheet.png" id="2_fly_sheet"]
-[ext_resource type="Texture2D" uid="uid://flyer_attack01" path="res://assets/sprites/enemies/flyer_attack_sheet.png" id="3_attack_sheet"]
-[ext_resource type="Texture2D" uid="uid://flyer_hurt01" path="res://assets/sprites/enemies/flyer_hurt_sheet.png" id="4_hurt_sheet"]
-[ext_resource type="Texture2D" uid="uid://flyer_death01" path="res://assets/sprites/enemies/flyer_death_sheet.png" id="5_death_sheet"]
+[ext_resource type="Texture2D" uid="uid://dwd7tpbtph1wi" path="res://assets/sprites/enemies/flyer_fly_sheet.png" id="2_fly_sheet"]
+[ext_resource type="Texture2D" uid="uid://5opgws2wwtpb" path="res://assets/sprites/enemies/flyer_attack_sheet.png" id="3_attack_sheet"]
+[ext_resource type="Texture2D" uid="uid://bg2ew6iqtshy5" path="res://assets/sprites/enemies/flyer_hurt_sheet.png" id="4_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://8j03ad510v2q" path="res://assets/sprites/enemies/flyer_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_flyer"]
 size = Vector2(24, 24)

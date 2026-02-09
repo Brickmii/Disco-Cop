@@ -1,12 +1,22 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; but it can also be edited via text.
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="Disco Cop"
 run/main_scene="res://scenes/ui/main_menu.tscn"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/features=PackedStringArray("4.6", "GL Compatibility")
 
 [autoload]
 
@@ -22,7 +32,6 @@ VFXSpawner="*res://autoloads/vfx_spawner.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/vsync/vsync_mode=0
 
 [input]
@@ -102,14 +111,11 @@ ui_join={
 
 [physics]
 
-2d/default_gravity=980.0
-2d/default_gravity_vector=Vector2(0, 1)
 common/physics_ticks_per_second=30
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.06, 0.02, 0.1, 1)
-anti_aliasing/quality/msaa_2d=0

@@ -1,15 +1,98 @@
-[gd_scene load_steps=4 format=3 uid="uid://c2skatingshooter01"]
+[gd_scene load_steps=24 format=3 uid="uid://c2skatingshooter01"]
 
 [ext_resource type="Script" path="res://scenes/enemies/skating_shooter.gd" id="1_skating_shooter"]
+[ext_resource type="Texture2D" uid="uid://shooter_skate01" path="res://assets/sprites/enemies/shooter_skate_sheet.png" id="2_skate_sheet"]
+[ext_resource type="Texture2D" uid="uid://shooter_shoot01" path="res://assets/sprites/enemies/shooter_shoot_skate_sheet.png" id="3_shoot_sheet"]
+[ext_resource type="Texture2D" uid="uid://shooter_hurt01" path="res://assets/sprites/enemies/shooter_hurt_sheet.png" id="4_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://shooter_death01" path="res://assets/sprites/enemies/shooter_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sshooter"]
 size = Vector2(20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_0"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(0, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_1"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(20, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_2"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(40, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_3"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(60, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_4"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(80, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="skate_5"]
+atlas = ExtResource("2_skate_sheet")
+region = Rect2(100, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="shoot_0"]
+atlas = ExtResource("3_shoot_sheet")
+region = Rect2(0, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="shoot_1"]
+atlas = ExtResource("3_shoot_sheet")
+region = Rect2(20, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="shoot_2"]
+atlas = ExtResource("3_shoot_sheet")
+region = Rect2(40, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="shoot_3"]
+atlas = ExtResource("3_shoot_sheet")
+region = Rect2(60, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="hurt_0"]
+atlas = ExtResource("4_hurt_sheet")
+region = Rect2(0, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="hurt_1"]
+atlas = ExtResource("4_hurt_sheet")
+region = Rect2(20, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="death_0"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(0, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="death_1"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(20, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="death_2"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(40, 0, 20, 40)
+
+[sub_resource type="AtlasTexture" id="death_3"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(60, 0, 20, 40)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_sshooter"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": null
+"texture": SubResource("skate_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_5")
 }],
 "loop": true,
 "name": &"skate",
@@ -17,7 +100,16 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": null
+"texture": SubResource("shoot_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("shoot_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("shoot_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("shoot_3")
 }],
 "loop": false,
 "name": &"shoot_skate",
@@ -25,7 +117,10 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": null
+"texture": SubResource("hurt_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_1")
 }],
 "loop": false,
 "name": &"hurt",
@@ -33,7 +128,16 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": null
+"texture": SubResource("death_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_3")
 }],
 "loop": false,
 "name": &"death",
@@ -52,12 +156,5 @@ shape = SubResource("RectangleShape2D_sshooter")
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -20)
 sprite_frames = SubResource("SpriteFrames_sshooter")
-
-[node name="Visual" type="ColorRect" parent="."]
-offset_left = -10.0
-offset_top = -40.0
-offset_right = 10.0
-offset_bottom = 0.0
-color = Color(0.9, 0.6, 0.1, 1)
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

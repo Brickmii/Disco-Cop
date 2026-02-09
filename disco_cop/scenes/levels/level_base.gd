@@ -74,4 +74,4 @@ func _spawn_loot_at(pos: Vector2, drop_data: Dictionary = {}) -> void:
 
 	var loot: Node = _loot_drop_scene.instantiate()
 	loot.call("setup", drop_data, pos)
-	add_child(loot)
+	call_deferred("add_child", loot)

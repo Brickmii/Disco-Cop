@@ -1,12 +1,12 @@
 [gd_scene load_steps=43 format=3 uid="uid://c2discokingboss"]
 
 [ext_resource type="Script" path="res://scenes/bosses/boss_disco_king.gd" id="1_boss"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_idle_sheet.png" id="2_idle_sheet"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_disco_ball_sheet.png" id="3_disco_ball_sheet"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_slam_sheet.png" id="4_slam_sheet"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_laser_sheet.png" id="5_laser_sheet"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_hurt_sheet.png" id="6_hurt_sheet"]
-[ext_resource type="Texture2D" path="res://assets/sprites/bosses/disco_king_death_sheet.png" id="7_death_sheet"]
+[ext_resource type="Texture2D" uid="uid://6v578nqc78tq" path="res://assets/sprites/bosses/disco_king_idle_sheet.png" id="2_idle_sheet"]
+[ext_resource type="Texture2D" uid="uid://c8uguwhwmguca" path="res://assets/sprites/bosses/disco_king_disco_ball_sheet.png" id="3_disco_ball_sheet"]
+[ext_resource type="Texture2D" uid="uid://4bet53vq0wav" path="res://assets/sprites/bosses/disco_king_slam_sheet.png" id="4_slam_sheet"]
+[ext_resource type="Texture2D" uid="uid://dp0gkknnvsxv4" path="res://assets/sprites/bosses/disco_king_laser_sheet.png" id="5_laser_sheet"]
+[ext_resource type="Texture2D" uid="uid://dc4bsu3uvafum" path="res://assets/sprites/bosses/disco_king_hurt_sheet.png" id="6_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://4804mgnidq0k" path="res://assets/sprites/bosses/disco_king_death_sheet.png" id="7_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_boss"]
 size = Vector2(48, 64)

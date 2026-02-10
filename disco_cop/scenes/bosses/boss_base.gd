@@ -78,11 +78,6 @@ func _die() -> void:
 	boss_defeated.emit()
 	EventBus.boss_defeated.emit(self)
 
-	# Drop loot
-	var drops := LootTable.roll_boss_drop()
-	for drop in drops:
-		EventBus.loot_dropped.emit(null, global_position + Vector2(randf_range(-40, 40), 0))
-
 	# Play death animation then fade out
 	_play_sprite_animation("death")
 	var tween := create_tween()

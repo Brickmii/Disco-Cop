@@ -1,37 +1,60 @@
-[gd_scene load_steps=2 format=3 uid="uid://c2playerhud01"]
+[gd_scene load_steps=10 format=3 uid="uid://c2playerhud01"]
 
 [ext_resource type="Script" path="res://scenes/player/player_hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/hud_health_frame.png" id="2_hf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/hud_health_fill.png" id="3_hfill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/hud_shield_frame.png" id="4_sf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/hud_shield_fill.png" id="5_sfill"]
+
+[sub_resource type="StyleBoxTexture" id="health_bg"]
+texture = ExtResource("2_hf")
+
+[sub_resource type="StyleBoxTexture" id="health_fill"]
+texture = ExtResource("3_hfill")
+
+[sub_resource type="StyleBoxTexture" id="shield_bg"]
+texture = ExtResource("4_sf")
+
+[sub_resource type="StyleBoxTexture" id="shield_fill"]
+texture = ExtResource("5_sfill")
 
 [node name="PlayerHUD" type="Control"]
-custom_minimum_size = Vector2(200, 120)
+custom_minimum_size = Vector2(200, 130)
 script = ExtResource("1_hud")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 offset_right = 200.0
-offset_bottom = 120.0
+offset_bottom = 130.0
 
 [node name="HealthBar" type="ProgressBar" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(180, 14)
+custom_minimum_size = Vector2(180, 18)
+theme_override_styles/background = SubResource("health_bg")
+theme_override_styles/fill = SubResource("health_fill")
 max_value = 100.0
 value = 100.0
 show_percentage = false
 
 [node name="ShieldBar" type="ProgressBar" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(180, 10)
+custom_minimum_size = Vector2(180, 14)
+theme_override_styles/background = SubResource("shield_bg")
+theme_override_styles/fill = SubResource("shield_fill")
 max_value = 50.0
 value = 50.0
 show_percentage = false
 
 [node name="WeaponLabel" type="Label" parent="VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "No Weapon"
 
 [node name="AmmoLabel" type="Label" parent="VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "-- / --"
 
 [node name="LivesLabel" type="Label" parent="VBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Lives: 3"

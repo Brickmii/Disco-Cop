@@ -64,7 +64,7 @@ func _on_continue_pressed() -> void:
 	visible = false
 	if _is_victory and GameManager.current_level == "tutorial":
 		# Tutorial complete — proceed to Level 1
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/levels/level_01.tscn")
+		Transition.change_scene("res://scenes/levels/level_01.tscn")
 	else:
 		GameManager.reset_game()
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/main_menu.tscn")
+		Transition.change_scene("res://scenes/ui/main_menu.tscn")

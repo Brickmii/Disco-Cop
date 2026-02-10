@@ -26,6 +26,7 @@ InputManager="*res://autoloads/input_manager.gd"
 AudioManager="*res://autoloads/audio_manager.gd"
 ObjectPool="*res://autoloads/object_pool.gd"
 VFXSpawner="*res://autoloads/vfx_spawner.gd"
+Transition="*res://autoloads/transition.gd"
 
 [display]
 

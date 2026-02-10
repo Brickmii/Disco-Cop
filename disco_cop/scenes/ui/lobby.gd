@@ -55,7 +55,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y:
 		skip_pressed = true
 	if skip_pressed and _input_cooldown <= 0 and GameManager.get_active_player_count() >= 1:
-		get_tree().change_scene_to_file("res://scenes/levels/level_01.tscn")
+		Transition.change_scene("res://scenes/levels/level_01.tscn")
 		return
 
 	# Start game — Enter, Start button, or A button (after join)
@@ -94,4 +94,4 @@ func _on_player_joined(player_index: int, _device_id: int) -> void:
 
 
 func _start_game() -> void:
-	get_tree().change_scene_to_file("res://scenes/levels/test_level.tscn")
+	Transition.change_scene("res://scenes/levels/test_level.tscn")

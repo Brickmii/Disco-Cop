@@ -72,4 +72,4 @@ func _on_tutorial_complete() -> void:
 			var holder: WeaponHolder = player_node.get_node("WeaponHolder") as WeaponHolder
 			if holder:
 				GameManager.save_player_weapons(pd["index"], holder.weapons)
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/levels/level_01.tscn")
+	Transition.change_scene("res://scenes/levels/level_01.tscn")

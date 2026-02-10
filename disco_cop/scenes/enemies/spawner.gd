@@ -15,9 +15,11 @@ var _enemies_remaining := 0
 var _spawn_timer := 0.0
 var _spawns_left := 0
 var _active := false
+var _all_cleared := false
 
 
 func _ready() -> void:
+	EventBus.enemy_died.connect(_on_enemy_died)
 	if auto_spawn:
 		activate()
 
@@ -39,6 +41,7 @@ func activate() -> void:
 	_spawns_left = spawn_count
 	_enemies_remaining = spawn_count
 	_spawn_timer = 0.0  # Spawn first one immediately
+	_all_cleared = false
 
 
 func _spawn_one() -> void:
@@ -49,17 +52,20 @@ func _spawn_one() -> void:
 	var enemy: Node2D = scene.instantiate() as Node2D
 
 	var offset := Vector2(randf_range(-spawn_radius, spawn_radius), 0)
-	enemy.global_position = global_position + offset
-
-	# Track death
-	if enemy.has_signal("tree_exiting"):
-		enemy.tree_exiting.connect(_on_enemy_died.bind(enemy))
+	var spawn_pos := global_position + offset
 
 	get_parent().add_child(enemy)
+	enemy.global_position = spawn_pos
 	_spawned_enemies.append(enemy)
 
 
-func _on_enemy_died(_enemy: Node) -> void:
+func _on_enemy_died(enemy_node: Node, _pos: Vector2) -> void:
+	if _all_cleared:
+		return
+	if enemy_node not in _spawned_enemies:
+		return
+
 	_enemies_remaining -= 1
 	if _enemies_remaining <= 0 and _spawns_left <= 0:
+		_all_cleared = true
 		all_enemies_defeated.emit()

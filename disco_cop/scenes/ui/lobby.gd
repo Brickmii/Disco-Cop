@@ -10,6 +10,7 @@ const PLAYER_COLORS: Array[Color] = [
 
 var _slot_labels: Array[Label] = []
 var _joined: Array[bool] = [false, false, false, false]
+var _input_cooldown := 0.3  # Prevent held button from auto-starting
 
 @onready var start_label: Label = $StartLabel
 
@@ -32,6 +33,11 @@ func _ready() -> void:
 	_update_start_label()
 
 
+func _process(delta: float) -> void:
+	if _input_cooldown > 0:
+		_input_cooldown -= delta
+
+
 func _input(event: InputEvent) -> void:
 	# Gamepad join
 	if event is InputEventJoypadButton and event.pressed:
@@ -42,7 +48,19 @@ func _input(event: InputEvent) -> void:
 			_update_slot(result)
 			_update_start_label()
 
+	# Skip tutorial — Y key or gamepad Y button
+	var skip_pressed := false
+	if event is InputEventKey and event.pressed and event.keycode == KEY_Y:
+		skip_pressed = true
+	if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y:
+		skip_pressed = true
+	if skip_pressed and _input_cooldown <= 0 and GameManager.get_active_player_count() >= 1:
+		get_tree().change_scene_to_file("res://scenes/levels/level_01.tscn")
+		return
+
 	# Start game — Enter, Start button, or A button (after join)
+	if _input_cooldown > 0:
+		return
 	var start_pressed := event.is_action_pressed("ui_join") or event.is_action_pressed("jump")
 	if not start_pressed and event is InputEventJoypadButton and event.pressed:
 		if event.button_index == JOY_BUTTON_START or event.button_index == JOY_BUTTON_A:
@@ -65,7 +83,7 @@ func _update_slot(index: int) -> void:
 func _update_start_label() -> void:
 	var count := GameManager.get_active_player_count()
 	if start_label:
-		start_label.text = "%d Player(s) - Press ENTER/START to begin" % count
+		start_label.text = "%d Player(s) - ENTER/START: Begin | Y: Skip Tutorial" % count
 
 
 func _on_player_joined(player_index: int, _device_id: int) -> void:

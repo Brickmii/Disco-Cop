@@ -7,8 +7,10 @@ const MAX_PLAYERS := 4
 const DEFAULT_LIVES := 3
 
 var current_state: GameState = GameState.MENU
+var current_level: String = ""
 var player_data: Array[Dictionary] = []  # [{index, device_id, lives, node, active}]
 var player_scenes: Array[Node] = []
+var player_weapons: Dictionary = {}  # {player_index: Array[WeaponData]}
 
 var _player_scene: PackedScene = null
 
@@ -86,8 +88,20 @@ func change_state(new_state: GameState) -> void:
 			EventBus.game_over.emit()
 
 
+func save_player_weapons(player_index: int, weapons: Array[WeaponData]) -> void:
+	player_weapons[player_index] = weapons.duplicate()
+
+
+func get_player_weapons(player_index: int) -> Array[WeaponData]:
+	if player_weapons.has(player_index):
+		return player_weapons[player_index]
+	return [] as Array[WeaponData]
+
+
 func reset_game() -> void:
 	for pd in player_data:
 		pd["lives"] = DEFAULT_LIVES
 		pd["node"] = null
+	player_weapons.clear()
+	current_level = ""
 	current_state = GameState.MENU

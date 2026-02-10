@@ -87,4 +87,4 @@ offset_top = -60.0
 offset_right = 200.0
 offset_bottom = -20.0
 horizontal_alignment = 1
-text = "1 Player(s) - Press ENTER/START to begin"
+text = "1 Player(s) - ENTER/START: Begin | Y: Skip Tutorial"

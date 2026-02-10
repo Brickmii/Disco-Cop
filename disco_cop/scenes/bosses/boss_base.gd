@@ -75,14 +75,20 @@ func take_damage(amount: float, _source_position: Vector2 = Vector2.ZERO) -> voi
 func _die() -> void:
 	is_dead = true
 	velocity = Vector2.ZERO
-	boss_defeated.emit()
-	EventBus.boss_defeated.emit(self)
 
 	# Play death animation then fade out
 	_play_sprite_animation("death")
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 1.0)
 	tween.tween_callback(queue_free)
+
+	# Emit defeat signals deferred to avoid cascade during physics
+	call_deferred("_emit_defeat_signals")
+
+
+func _emit_defeat_signals() -> void:
+	boss_defeated.emit()
+	EventBus.boss_defeated.emit(self)
 
 
 func _on_phase_change(_phase: int) -> void:

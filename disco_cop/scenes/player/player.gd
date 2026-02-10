@@ -66,6 +66,13 @@ func _ready() -> void:
 
 	EventBus.player_spawned.emit(player_index, self)
 
+	# Restore saved weapons from previous level (e.g. tutorial → Level 1)
+	var saved_weapons := GameManager.get_player_weapons(player_index)
+	if not saved_weapons.is_empty():
+		weapon_holder.weapons.clear()
+		for w in saved_weapons:
+			weapon_holder.equip_weapon(w)
+
 
 func _physics_process(delta: float) -> void:
 	# Timers

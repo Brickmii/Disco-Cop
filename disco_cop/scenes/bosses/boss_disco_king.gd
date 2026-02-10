@@ -126,11 +126,12 @@ func _attack_ground_slam(_delta: float) -> void:
 	elif _pattern_timer < 0.6:
 		# Slam down
 		velocity.y = 800.0
-	elif is_on_floor() and _pattern_timer > 0.6:
-		# Ground wave on landing
-		_spawn_ground_wave()
-		EventBus.camera_shake_requested.emit(8.0, 0.3)
-		_end_attack()
+	elif _pattern_timer > 0.6:
+		if is_on_floor() or _pattern_timer > 2.0:
+			# Ground wave on landing (or timeout safety)
+			_spawn_ground_wave()
+			EventBus.camera_shake_requested.emit(8.0, 0.3)
+			_end_attack()
 
 
 func _attack_laser_sweep(_delta: float) -> void:

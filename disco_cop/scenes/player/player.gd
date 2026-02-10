@@ -51,6 +51,8 @@ var _stuck_barrier_x := 0.0
 
 func _ready() -> void:
 	add_to_group("players")
+	GameManager.player_data[player_index]["node"] = self
+	GameManager.player_data[player_index]["active"] = true
 	_enter_state(State.IDLE)
 
 	# Connect health/shield signals
@@ -177,18 +179,20 @@ func _state_fall(delta: float) -> void:
 	_apply_gravity(delta)
 	_apply_air_movement(delta)
 
+	var jump_pressed := InputManager.is_action_just_pressed(player_index, "jump")
+
 	# Coyote time jump
-	if _wants_jump() and coyote_timer > 0:
+	if jump_pressed and coyote_timer > 0:
 		_do_jump()
 		return
 
 	# Double jump
-	if InputManager.is_action_just_pressed(player_index, "jump") and can_double_jump:
+	if jump_pressed and can_double_jump:
 		_do_double_jump()
 		return
 
 	# Buffer jump
-	if InputManager.is_action_just_pressed(player_index, "jump"):
+	if jump_pressed:
 		jump_buffer_timer = JUMP_BUFFER_TIME
 
 	if is_on_floor():

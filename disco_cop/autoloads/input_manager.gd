@@ -119,30 +119,34 @@ func _is_gamepad_action_pressed(device_id: int, action: String) -> bool:
 		"reload":
 			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_X)
 		"interact":
-			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_Y)
-		"swap_weapon":
 			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_B)
+		"swap_weapon":
+			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_Y)
 		"pause":
 			return Input.is_joy_button_pressed(device_id, JOY_BUTTON_START)
 	return false
 
 
 func _is_gamepad_action_just_pressed(device_id: int, action: String) -> bool:
+	var key := ""
 	match action:
 		"jump":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_A])
+			key = "%d_%d" % [device_id, JOY_BUTTON_A]
 		"shoot":
-			return _joy_pressed_events.has("%d_rt" % device_id)
+			key = "%d_rt" % device_id
 		"reload":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_X])
+			key = "%d_%d" % [device_id, JOY_BUTTON_X]
 		"interact":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_Y])
+			key = "%d_%d" % [device_id, JOY_BUTTON_B]
 		"swap_weapon":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_B])
+			key = "%d_%d" % [device_id, JOY_BUTTON_Y]
 		"pause":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_START])
+			key = "%d_%d" % [device_id, JOY_BUTTON_START]
 		"ui_join":
-			return _joy_pressed_events.has("%d_%d" % [device_id, JOY_BUTTON_START])
+			key = "%d_%d" % [device_id, JOY_BUTTON_START]
+	if key != "" and _joy_pressed_events.has(key):
+		_joy_pressed_events.erase(key)
+		return true
 	return false
 
 

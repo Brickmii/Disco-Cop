@@ -174,12 +174,6 @@ func _on_died() -> void:
 	_change_state(State.DEAD)
 	velocity = Vector2.ZERO
 
-	# Drop loot
-	if enemy_data:
-		var drop := LootTable.roll_drop(enemy_data.loot_chance)
-		if not drop.is_empty():
-			EventBus.loot_dropped.emit(null, global_position)
-
 	EventBus.enemy_died.emit(self, global_position)
 
 	# Play death animation then fade out

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Generate placeholder disco/funk music loops for Disco Cop.
+"""Generate disco music loops for Disco Cop.
 
-Creates 3 music tracks using numpy synthesis:
-  - menu_theme.wav  — chill disco groove (4 bars, ~8 sec loop)
-  - level_theme.wav — upbeat funk (4 bars, ~6 sec loop)
-  - boss_theme.wav  — intense disco (4 bars, ~5 sec loop)
+Creates 3 tracks with authentic disco elements:
+  - Four-on-the-floor kick with open hi-hat off-beats
+  - Octave-bouncing disco bass lines
+  - Rhythm guitar stabs (wah-style filtered chords)
+  - Lush string/synth pads
+  - Funky lead melodies
 
-These are intentionally lo-fi / chiptune-adjacent placeholder tracks.
-Convert to OGG with: ffmpeg -i track.wav -c:a libvorbis -q:a 4 track.ogg
+  - menu_theme.wav  — smooth disco groove (120 BPM, ~16s)
+  - level_theme.wav — upbeat disco funk (126 BPM, ~15s)
+  - boss_theme.wav  — intense dark disco (132 BPM, ~14s)
 
 Usage:
     python create_music.py
@@ -27,373 +30,521 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 RATE = 44100
 
-# ── Note Frequencies (A4 = 440 Hz) ───────────────────────────────────
+# ── Note Frequencies ──────────────────────────────────────────────────
 NOTE_FREQS = {}
 NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-for octave in range(1, 8):
-    for i, name in enumerate(NOTE_NAMES):
-        midi = (octave + 1) * 12 + i
-        NOTE_FREQS[f"{name}{octave}"] = 440.0 * 2 ** ((midi - 69) / 12.0)
+for _oct in range(1, 8):
+    for _i, _nm in enumerate(NOTE_NAMES):
+        _midi = (_oct + 1) * 12 + _i
+        NOTE_FREQS[f"{_nm}{_oct}"] = 440.0 * 2 ** ((_midi - 69) / 12.0)
 
 
-def note(name: str) -> float:
+def n(name: str) -> float:
     return NOTE_FREQS.get(name, 0)
 
 
 # ── Waveforms ─────────────────────────────────────────────────────────
 
-def sine_wave(freq: float, duration: float) -> np.ndarray:
-    t = np.linspace(0, duration, int(RATE * duration), endpoint=False)
+def sine(freq, dur):
+    t = np.linspace(0, dur, int(RATE * dur), False)
     return np.sin(2 * np.pi * freq * t)
 
 
-def square_wave(freq: float, duration: float, duty: float = 0.5) -> np.ndarray:
-    t = np.linspace(0, duration, int(RATE * duration), endpoint=False)
+def square(freq, dur, duty=0.5):
+    t = np.linspace(0, dur, int(RATE * dur), False)
     return np.where((t * freq) % 1.0 < duty, 1.0, -1.0)
 
 
-def saw_wave(freq: float, duration: float) -> np.ndarray:
-    t = np.linspace(0, duration, int(RATE * duration), endpoint=False)
+def saw(freq, dur):
+    t = np.linspace(0, dur, int(RATE * dur), False)
     return 2.0 * (t * freq - np.floor(0.5 + t * freq))
 
 
-def noise_burst(duration: float) -> np.ndarray:
-    return np.random.uniform(-1, 1, int(RATE * duration))
+def noise(dur):
+    return np.random.uniform(-1, 1, int(RATE * dur))
 
 
-def silence(duration: float) -> np.ndarray:
-    return np.zeros(int(RATE * duration))
+def sweep_sin(f0, f1, dur):
+    t = np.linspace(0, dur, int(RATE * dur), False)
+    freqs = np.linspace(f0, f1, len(t))
+    return np.sin(2 * np.pi * np.cumsum(freqs) / RATE)
 
 
 # ── Envelopes ─────────────────────────────────────────────────────────
 
-def env_pluck(length: int, decay: float = 0.15) -> np.ndarray:
+def env_decay(length, tau=0.15):
     t = np.linspace(0, length / RATE, length)
-    return np.exp(-t / decay)
+    return np.exp(-t / tau)
 
 
-def env_sustain(length: int, attack: float = 0.01, release: float = 0.02) -> np.ndarray:
-    env = np.ones(length)
+def env_ar(length, attack=0.01, release=0.02):
+    e = np.ones(length)
     a = min(int(attack * RATE), length)
     r = min(int(release * RATE), length)
     if a > 0:
-        env[:a] = np.linspace(0, 1, a)
+        e[:a] = np.linspace(0, 1, a)
     if r > 0:
-        env[-r:] = np.linspace(1, 0, r)
-    return env
+        e[-r:] = np.linspace(1, 0, r)
+    return e
 
 
-def env_kick(length: int) -> np.ndarray:
-    t = np.linspace(0, length / RATE, length)
-    return np.exp(-t / 0.08)
+def env_swell(length, attack=0.08):
+    """Slow attack for strings."""
+    e = np.ones(length)
+    a = min(int(attack * RATE), length)
+    r = min(int(0.05 * RATE), length)
+    if a > 0:
+        e[:a] = np.linspace(0, 1, a)
+    if r > 0:
+        e[-r:] = np.linspace(1, 0, r)
+    return e
 
 
-# ── Instrument Voices ─────────────────────────────────────────────────
+# ── Instruments ───────────────────────────────────────────────────────
 
-def bass_note(freq: float, duration: float, decay: float = 0.2) -> np.ndarray:
-    sig = square_wave(freq, duration, 0.25) * 0.4 + sine_wave(freq, duration) * 0.3
-    return sig * env_pluck(len(sig), decay)
-
-
-def lead_note(freq: float, duration: float) -> np.ndarray:
-    sig = square_wave(freq, duration, 0.5) * 0.25 + sine_wave(freq * 2, duration) * 0.1
-    return sig * env_sustain(len(sig), 0.005, 0.02)
+def kick(dur=0.15):
+    nn = int(RATE * dur)
+    t = np.linspace(0, dur, nn, False)
+    freq = 160 * np.exp(-t / 0.035) + 45
+    sig = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * 0.65
+    return sig * env_decay(nn, 0.08)
 
 
-def pad_note(freq: float, duration: float) -> np.ndarray:
-    sig = sine_wave(freq, duration) * 0.12
-    sig += sine_wave(freq * 1.005, duration) * 0.08  # Slight detune for width
-    sig += sine_wave(freq * 2, duration) * 0.05
-    return sig * env_sustain(len(sig), 0.05, 0.05)
+def snare(dur=0.12):
+    nn = int(RATE * dur)
+    sig = noise(dur) * 0.3 + square(180, dur) * 0.12
+    return sig * env_decay(nn, 0.05)
 
 
-def kick(duration: float = 0.15) -> np.ndarray:
-    n = int(RATE * duration)
-    t = np.linspace(0, duration, n, endpoint=False)
-    freq = 150 * np.exp(-t / 0.04) + 40
-    sig = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * 0.6
-    return sig * env_kick(n)
+def hihat_closed(dur=0.04):
+    nn = int(RATE * dur)
+    return noise(dur) * 0.18 * env_decay(nn, 0.02)
 
 
-def snare(duration: float = 0.12) -> np.ndarray:
-    n = int(RATE * duration)
-    sig = noise_burst(duration) * 0.35 + square_wave(200, duration) * 0.15
-    return sig * env_pluck(n, 0.06)
+def hihat_open(dur=0.12):
+    """Open hi-hat — THE disco signature sound on every off-beat."""
+    nn = int(RATE * dur)
+    return noise(dur) * 0.16 * env_decay(nn, 0.08)
 
 
-def hihat(duration: float = 0.05) -> np.ndarray:
-    n = int(RATE * duration)
-    sig = noise_burst(duration) * 0.2
-    return sig * env_pluck(n, 0.03)
+def disco_bass(freq, dur, decay=0.12):
+    """Punchy disco bass — fundamental + sub octave."""
+    sig = square(freq, dur, 0.3) * 0.35
+    sig += sine(freq, dur) * 0.3
+    sig += sine(freq * 0.5, dur) * 0.15  # Sub
+    return sig * env_decay(len(sig), decay)
 
 
-def hihat_open(duration: float = 0.15) -> np.ndarray:
-    n = int(RATE * duration)
-    sig = noise_burst(duration) * 0.15
-    return sig * env_pluck(n, 0.1)
+def guitar_stab(freqs, dur=0.08):
+    """Rhythm guitar chord stab — filtered square, quick decay.
+    Simulates the classic disco wah-guitar 'chucka' sound."""
+    sig = np.zeros(int(RATE * dur))
+    for f in freqs:
+        # Slightly detuned for width
+        sig += square(f, dur, 0.4) * 0.06
+        sig += square(f * 1.003, dur, 0.4) * 0.04
+    # Simple low-pass simulation: average adjacent samples
+    for _ in range(3):
+        sig = np.convolve(sig, [0.25, 0.5, 0.25], mode='same')
+    return sig * env_decay(len(sig), 0.04)
 
 
-# ── Pattern Helpers ───────────────────────────────────────────────────
+def guitar_mute(freqs, dur=0.04):
+    """Muted guitar hit — shorter, more percussive."""
+    sig = np.zeros(int(RATE * dur))
+    for f in freqs:
+        sig += square(f, dur, 0.35) * 0.05
+    for _ in range(4):
+        sig = np.convolve(sig, [0.25, 0.5, 0.25], mode='same')
+    return sig * env_decay(len(sig), 0.02)
 
-def mix_at(target: np.ndarray, source: np.ndarray, offset: int):
-    """Mix source into target at sample offset."""
+
+def string_note(freq, dur):
+    """Disco string — lush saw with slow swell."""
+    sig = saw(freq, dur) * 0.07
+    sig += saw(freq * 1.004, dur) * 0.05  # Detune
+    sig += saw(freq * 0.998, dur) * 0.04  # More detune
+    sig += sine(freq * 2, dur) * 0.03     # Octave shimmer
+    # Soften with averaging
+    for _ in range(2):
+        sig = np.convolve(sig, [0.3, 0.4, 0.3], mode='same')
+    return sig * env_swell(len(sig), 0.1)
+
+
+def string_chord(freqs, dur):
+    """Multi-note string pad."""
+    sig = np.zeros(int(RATE * dur))
+    for f in freqs:
+        sig += string_note(f, dur)
+    return sig
+
+
+def lead_synth(freq, dur):
+    """Bright synth lead — square + octave sine."""
+    sig = square(freq, dur, 0.5) * 0.18
+    sig += sine(freq * 2, dur) * 0.08
+    sig += sine(freq, dur) * 0.06
+    return sig * env_ar(len(sig), 0.005, 0.03)
+
+
+# ── Helpers ───────────────────────────────────────────────────────────
+
+def mix_at(target, source, offset):
     end = min(offset + len(source), len(target))
+    if offset < 0 or offset >= len(target):
+        return
     target[offset:end] += source[:end - offset]
 
 
-def beats_to_samples(beats: float, bpm: float) -> int:
+def bts(beats, bpm):
+    """Beats to samples."""
     return int(RATE * 60.0 / bpm * beats)
 
 
-# ── Track Generators ──────────────────────────────────────────────────
+# ── DISCO DRUM PATTERN ────────────────────────────────────────────────
+
+def disco_drums(mix, bpm, total_bars, variation=0):
+    """Classic disco drum pattern:
+    - Kick on every quarter (four-on-the-floor)
+    - Open hi-hat on every off-beat (the defining disco element)
+    - Snare on 2 and 4
+    - Closed hi-hat 16ths for groove
+    """
+    beat = bts(1, bpm)
+    bar = beat * 4
+    sixteenth = beat // 4
+
+    for b in range(total_bars):
+        for i in range(4):
+            pos = b * bar + i * beat
+
+            # KICK — every beat, four-on-the-floor
+            mix_at(mix, kick(), pos)
+
+            # SNARE — beats 2 and 4
+            if i in [1, 3]:
+                mix_at(mix, snare(), pos)
+
+            # OPEN HI-HAT — every off-beat (between kicks)
+            # This is THE disco sound
+            mix_at(mix, hihat_open(), pos + beat // 2)
+
+            # CLOSED HI-HAT — 16th notes for groove
+            for s in range(4):
+                if s == 2:  # Skip where open hat is
+                    continue
+                vol = 0.8 if s == 0 else 0.5
+                mix_at(mix, hihat_closed() * vol, pos + s * sixteenth)
+
+            # Variation: extra snare ghost notes
+            if variation >= 1 and i == 0 and b % 2 == 1:
+                mix_at(mix, snare(0.06) * 0.4, pos + 3 * sixteenth)
+            if variation >= 2 and i == 3:
+                mix_at(mix, snare(0.06) * 0.5, pos + beat // 2)
+
+
+# ── TRACK 1: MENU THEME ──────────────────────────────────────────────
 
 def create_menu_theme():
-    """Chill disco groove — 120 BPM, 8 bars (~16 sec loop)."""
+    """Smooth disco groove — 120 BPM, 8 bars.
+    Think: Donna Summer 'I Feel Love' meets chillout.
+    Progression: Am7 - Dm9 - Gmaj7 - Cmaj7 (2 bars each)
+    """
     bpm = 120
-    beat = beats_to_samples(1, bpm)
-    sixteenth = beat // 4
+    beat = bts(1, bpm)
     bar = beat * 4
     total_bars = 8
     total = bar * total_bars
     mix = np.zeros(total)
 
-    # ── Drums: classic disco pattern ──
-    for b in range(total_bars):
-        for i in range(4):  # 4 beats per bar
-            pos = b * bar + i * beat
-            # Kick on every beat (four-on-the-floor)
-            mix_at(mix, kick(), pos)
-            # Snare on 2 and 4
-            if i in [1, 3]:
-                mix_at(mix, snare(), pos)
-            # Hi-hat on every eighth
-            mix_at(mix, hihat(), pos)
-            mix_at(mix, hihat(), pos + beat // 2)
-            # Open hi-hat on off-beats
-            if i in [1, 3]:
-                mix_at(mix, hihat_open(), pos + beat // 2)
+    # Drums
+    disco_drums(mix, bpm, total_bars, variation=0)
 
-    # ── Bass: disco octave pattern ──
-    # Chord progression: Am - Dm - G - C (2 bars each)
+    # ── Disco bass: octave bounce pattern ──
     bass_prog = [
-        (note('A2'), note('A3')),  # Am
-        (note('D2'), note('D3')),  # Dm
-        (note('G2'), note('G3')),  # G
-        (note('C2'), note('C3')),  # C
+        ('A2', 'A3'),   # Am7
+        ('D2', 'D3'),   # Dm9
+        ('G2', 'G3'),   # Gmaj7
+        ('C2', 'C3'),   # Cmaj7
     ]
-    for chord_idx, (low, high) in enumerate(bass_prog):
-        for rep in range(2):  # 2 bars per chord
-            b = chord_idx * 2 + rep
+    eighth = beat // 2
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            # Classic disco octave pattern: low-high-low-high per beat
+            for i in range(4):
+                bp = pos + i * beat
+                mix_at(mix, disco_bass(n(lo), 0.18, 0.12), bp)
+                mix_at(mix, disco_bass(n(hi), 0.12, 0.08), bp + eighth)
+
+    # ── Rhythm guitar: off-beat stabs ──
+    guitar_chords = [
+        [n('A3'), n('C4'), n('E4'), n('G4')],   # Am7
+        [n('D3'), n('F4'), n('A4'), n('C5')],   # Dm9
+        [n('G3'), n('B3'), n('D4'), n('F#4')],  # Gmaj7
+        [n('C3'), n('E4'), n('G4'), n('B4')],   # Cmaj7
+    ]
+    for ci, chord in enumerate(guitar_chords):
+        for rep in range(2):
+            b = ci * 2 + rep
             for i in range(4):
                 pos = b * bar + i * beat
-                # Octave bounce: low-high-low-high
-                f = low if i % 2 == 0 else high
-                mix_at(mix, bass_note(f, 60.0 / bpm * 0.8, 0.15), pos)
+                # Stab on off-beat (between kicks)
+                mix_at(mix, guitar_stab(chord), pos + eighth)
+                # Ghost mute on the 'a' of each beat
+                mix_at(mix, guitar_mute(chord), pos + 3 * (beat // 4))
 
-    # ── Pad: sustained chords ──
-    pad_chords = [
-        [note('A3'), note('C4'), note('E4')],   # Am
-        [note('D3'), note('F4'), note('A4')],   # Dm
-        [note('G3'), note('B3'), note('D4')],   # G
-        [note('C3'), note('E4'), note('G4')],   # C
+    # ── Strings: lush sustained pads ──
+    str_chords = [
+        [n('A3'), n('C4'), n('E4'), n('G4')],
+        [n('D4'), n('F4'), n('A4'), n('C5')],
+        [n('G3'), n('B3'), n('D4'), n('F#4')],
+        [n('C4'), n('E4'), n('G4'), n('B4')],
     ]
-    for chord_idx, chord in enumerate(pad_chords):
+    for ci, chord in enumerate(str_chords):
         dur = 60.0 / bpm * 8  # 2 bars
-        pos = chord_idx * 2 * bar
-        for f in chord:
-            mix_at(mix, pad_note(f, dur), pos)
+        pos = ci * 2 * bar
+        mix_at(mix, string_chord(chord, dur), pos)
 
-    # ── Lead: simple melody ──
+    # ── Lead: smooth melody ──
     melody = [
-        # (bar, beat_offset, note_name, duration_beats)
-        (0, 0, 'E4', 1), (0, 1, 'C4', 0.5), (0, 1.5, 'D4', 0.5),
-        (0, 2, 'E4', 1), (0, 3, 'G4', 1),
+        (0, 0, 'E5', 1), (0, 1, 'D5', 0.5), (0, 1.5, 'C5', 0.5),
+        (0, 2, 'A4', 1.5), (0, 3.5, 'G4', 0.5),
         (1, 0, 'A4', 2), (1, 2, 'G4', 1), (1, 3, 'E4', 1),
-        (2, 0, 'D4', 1), (2, 1, 'E4', 0.5), (2, 1.5, 'D4', 0.5),
-        (2, 2, 'B3', 1), (2, 3, 'D4', 1),
-        (3, 0, 'C4', 2), (3, 2, 'E4', 1), (3, 3, 'G4', 1),
-        # Repeat with variation
-        (4, 0, 'E4', 1), (4, 1, 'C4', 0.5), (4, 1.5, 'D4', 0.5),
-        (4, 2, 'E4', 0.5), (4, 2.5, 'G4', 0.5), (4, 3, 'A4', 1),
-        (5, 0, 'G4', 1.5), (5, 1.5, 'E4', 0.5), (5, 2, 'D4', 2),
-        (6, 0, 'D4', 1), (6, 1, 'F4', 1), (6, 2, 'E4', 1), (6, 3, 'D4', 1),
-        (7, 0, 'C4', 3), (7, 3, 'E4', 1),
+        (2, 0, 'D5', 0.5), (2, 0.5, 'E5', 0.5), (2, 1, 'D5', 1),
+        (2, 2, 'B4', 1), (2, 3, 'A4', 1),
+        (3, 0, 'G4', 1.5), (3, 1.5, 'A4', 0.5), (3, 2, 'B4', 2),
+        # Second half: variation
+        (4, 0, 'C5', 1), (4, 1, 'B4', 0.5), (4, 1.5, 'A4', 0.5),
+        (4, 2, 'G4', 1), (4, 3, 'A4', 0.5), (4, 3.5, 'B4', 0.5),
+        (5, 0, 'C5', 2), (5, 2, 'A4', 2),
+        (6, 0, 'F5', 0.5), (6, 0.5, 'E5', 0.5), (6, 1, 'D5', 0.5),
+        (6, 1.5, 'C5', 0.5), (6, 2, 'D5', 1), (6, 3, 'E5', 1),
+        (7, 0, 'C5', 2), (7, 2, 'B4', 1), (7, 3, 'A4', 1),
     ]
-    for m_bar, beat_off, n, dur_beats in melody:
+    for m_bar, beat_off, note_name, dur_beats in melody:
         pos = m_bar * bar + int(beat_off * beat)
-        dur = 60.0 / bpm * dur_beats * 0.9
-        mix_at(mix, lead_note(note(n), dur), pos)
+        dur = 60.0 / bpm * dur_beats * 0.85
+        mix_at(mix, lead_synth(n(note_name), dur), pos)
 
     return mix, "menu_theme"
 
 
+# ── TRACK 2: LEVEL THEME ─────────────────────────────────────────────
+
 def create_level_theme():
-    """Upbeat funk — 140 BPM, 8 bars (~14 sec loop)."""
-    bpm = 140
-    beat = beats_to_samples(1, bpm)
+    """Upbeat disco funk — 126 BPM, 8 bars.
+    Think: Bee Gees 'Stayin Alive' energy.
+    Progression: Em7 - A7 - Dm7 - G7 (2 bars each)
+    """
+    bpm = 126
+    beat = bts(1, bpm)
     bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
     total_bars = 8
     total = bar * total_bars
     mix = np.zeros(total)
 
-    # ── Drums: driving funk beat ──
-    for b in range(total_bars):
-        for i in range(4):
-            pos = b * bar + i * beat
-            # Kick: 1, "and of 2", 3
-            if i in [0, 2]:
-                mix_at(mix, kick(), pos)
-            if i == 1:
-                mix_at(mix, kick(), pos + beat // 2)
-            # Snare on 2 and 4
-            if i in [1, 3]:
-                mix_at(mix, snare(), pos)
-            # 16th note hi-hats
-            for s in range(4):
-                vol = 0.7 if s == 0 else 0.4
-                hh = hihat(0.04)
-                mix_at(mix, hh * vol, pos + s * (beat // 4))
+    # Drums with ghost notes
+    disco_drums(mix, bpm, total_bars, variation=1)
 
-    # ── Bass: funky syncopated ──
+    # ── Disco bass: syncopated octave bounce ──
     bass_prog = [
-        (note('E2'), note('E3')),
-        (note('A2'), note('A3')),
-        (note('D2'), note('D3')),
-        (note('A2'), note('A3')),
+        ('E2', 'E3'),  # Em7
+        ('A2', 'A3'),  # A7
+        ('D2', 'D3'),  # Dm7
+        ('G2', 'G3'),  # G7
     ]
-    for chord_idx, (low, high) in enumerate(bass_prog):
+    for ci, (lo, hi) in enumerate(bass_prog):
         for rep in range(2):
-            b = chord_idx * 2 + rep
+            b = ci * 2 + rep
             pos = b * bar
-            # Funky rhythm: 1, and-of-2, 3, and-of-3, 4
-            mix_at(mix, bass_note(low, 0.15, 0.1), pos)
-            mix_at(mix, bass_note(high, 0.1, 0.08), pos + beat + beat // 2)
-            mix_at(mix, bass_note(low, 0.15, 0.1), pos + beat * 2)
-            mix_at(mix, bass_note(high, 0.08, 0.06), pos + beat * 2 + beat // 2)
-            mix_at(mix, bass_note(low, 0.12, 0.1), pos + beat * 3)
+            # Syncopated funk pattern
+            mix_at(mix, disco_bass(n(lo), 0.15, 0.1), pos)                    # 1
+            mix_at(mix, disco_bass(n(hi), 0.1, 0.06), pos + eighth)           # &
+            mix_at(mix, disco_bass(n(lo), 0.08, 0.06), pos + beat + sixteenth * 3)  # a of 2
+            mix_at(mix, disco_bass(n(hi), 0.12, 0.08), pos + beat * 2)        # 3
+            mix_at(mix, disco_bass(n(lo), 0.1, 0.06), pos + beat * 2 + eighth) # & of 3
+            mix_at(mix, disco_bass(n(hi), 0.15, 0.1), pos + beat * 3)          # 4
+            mix_at(mix, disco_bass(n(lo), 0.08, 0.06), pos + beat * 3 + eighth) # & of 4
 
-    # ── Lead: energetic riff ──
-    riff = [
-        (0, 0, 'E4', 0.5), (0, 0.5, 'G4', 0.5), (0, 1, 'A4', 0.5),
-        (0, 1.5, 'B4', 0.5), (0, 2, 'A4', 1), (0, 3, 'G4', 0.5), (0, 3.5, 'E4', 0.5),
-        (1, 0, 'D4', 1), (1, 1, 'E4', 0.5), (1, 1.5, 'G4', 0.5),
-        (1, 2, 'A4', 1.5), (1, 3.5, 'G4', 0.5),
+    # ── Rhythm guitar: classic 16th-note disco chucka ──
+    gtr_chords = [
+        [n('E3'), n('G4'), n('B4'), n('D5')],   # Em7
+        [n('A3'), n('C#4'), n('E4'), n('G4')],  # A7
+        [n('D3'), n('F4'), n('A4'), n('C5')],   # Dm7
+        [n('G3'), n('B3'), n('D4'), n('F4')],   # G7
     ]
-    for rep in range(4):  # Repeat riff 4 times
-        for m_bar, beat_off, n, dur_beats in riff:
-            pos = (rep * 2 + m_bar) * bar + int(beat_off * beat)
-            dur = 60.0 / bpm * dur_beats * 0.85
-            mix_at(mix, lead_note(note(n), dur), pos)
+    for ci, chord in enumerate(gtr_chords):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                # 16th note rhythm: X.x.X.x. (stab-mute-stab-mute)
+                mix_at(mix, guitar_stab(chord, 0.07), pos + eighth)
+                mix_at(mix, guitar_mute(chord, 0.04), pos + eighth + sixteenth)
+                mix_at(mix, guitar_stab(chord, 0.06), pos + 3 * sixteenth)
 
-    # ── Pad: power chords ──
-    pad_chords = [
-        [note('E3'), note('B3')],
-        [note('A3'), note('E4')],
-        [note('D3'), note('A3')],
-        [note('A3'), note('E4')],
+    # ── Strings ──
+    str_chords = [
+        [n('E4'), n('G4'), n('B4'), n('D5')],
+        [n('A3'), n('C#4'), n('E4'), n('G4')],
+        [n('D4'), n('F4'), n('A4'), n('C5')],
+        [n('G3'), n('B3'), n('D4'), n('F4')],
     ]
-    for chord_idx, chord in enumerate(pad_chords):
+    for ci, chord in enumerate(str_chords):
         dur = 60.0 / bpm * 8
-        pos = chord_idx * 2 * bar
-        for f in chord:
-            mix_at(mix, pad_note(f, dur) * 0.7, pos)
+        pos = ci * 2 * bar
+        mix_at(mix, string_chord(chord, dur) * 0.8, pos)
+
+    # ── Lead: energetic disco riff ──
+    riff_a = [
+        (0, 'E5', 0.5), (0.5, 'D5', 0.25), (0.75, 'E5', 0.25),
+        (1, 'G5', 0.5), (1.5, 'E5', 0.5),
+        (2, 'D5', 0.5), (2.5, 'B4', 0.5),
+        (3, 'A4', 0.75), (3.75, 'B4', 0.25),
+    ]
+    riff_b = [
+        (0, 'A4', 0.5), (0.5, 'B4', 0.25), (0.75, 'C5', 0.25),
+        (1, 'D5', 0.5), (1.5, 'E5', 0.5),
+        (2, 'D5', 1),
+        (3, 'B4', 0.5), (3.5, 'A4', 0.5),
+    ]
+    for rep in range(2):
+        for m_bar_off, riff in [(0, riff_a), (1, riff_b)]:
+            b = rep * 4 + m_bar_off * 2
+            for beat_off, note_name, dur_beats in riff:
+                # Play in bars b and b+1
+                for sub in range(2):
+                    pos = (b + sub) * bar + int(beat_off * beat)
+                    dur = 60.0 / bpm * dur_beats * 0.8
+                    mix_at(mix, lead_synth(n(note_name), dur), pos)
 
     return mix, "level_theme"
 
 
+# ── TRACK 3: BOSS THEME ──────────────────────────────────────────────
+
 def create_boss_theme():
-    """Intense disco — 160 BPM, 8 bars (~12 sec loop)."""
-    bpm = 160
-    beat = beats_to_samples(1, bpm)
+    """Dark intense disco — 132 BPM, 8 bars.
+    Think: Giorgio Moroder 'Chase' / Cerrone 'Supernature'.
+    Progression: Am - F - Dm - E7 (2 bars each, minor key tension)
+    """
+    bpm = 132
+    beat = bts(1, bpm)
     bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
     total_bars = 8
     total = bar * total_bars
     mix = np.zeros(total)
 
-    # ── Drums: intense four-on-the-floor + double-time hats ──
-    for b in range(total_bars):
-        for i in range(4):
-            pos = b * bar + i * beat
-            # Kick on every beat
-            mix_at(mix, kick(0.12), pos)
-            # Snare on 2 and 4 with extra hit on and-of-4
-            if i in [1, 3]:
-                mix_at(mix, snare(0.1), pos)
-            if i == 3:
-                mix_at(mix, snare(0.08) * 0.7, pos + beat // 2)
-            # 16th note hats
-            for s in range(4):
-                vol = 0.8 if s == 0 else 0.5 if s == 2 else 0.3
-                mix_at(mix, hihat(0.03) * vol, pos + s * (beat // 4))
-            # Open hat on off-beats every other bar
-            if b % 2 == 1 and i in [1, 3]:
-                mix_at(mix, hihat_open(0.1), pos + beat // 2)
+    # Intense drums
+    disco_drums(mix, bpm, total_bars, variation=2)
 
-    # ── Bass: driving minor key ──
+    # ── Bass: driving octave eighths ──
     bass_prog = [
-        (note('A2'), note('A3')),
-        (note('F2'), note('F3')),
-        (note('G2'), note('G3')),
-        (note('E2'), note('E3')),
+        ('A2', 'A3'),  # Am
+        ('F2', 'F3'),  # F
+        ('D2', 'D3'),  # Dm
+        ('E2', 'E3'),  # E7
     ]
-    for chord_idx, (low, high) in enumerate(bass_prog):
+    for ci, (lo, hi) in enumerate(bass_prog):
         for rep in range(2):
-            b = chord_idx * 2 + rep
+            b = ci * 2 + rep
             pos = b * bar
-            # Driving eighths
+            # Relentless eighth-note octave pumping
             for i in range(8):
-                f = low if i % 2 == 0 else high
-                mix_at(mix, bass_note(f, 0.1, 0.08), pos + i * (beat // 2))
+                f = n(lo) if i % 2 == 0 else n(hi)
+                mix_at(mix, disco_bass(f, 0.12, 0.08), pos + i * eighth)
 
-    # ── Lead: intense descending pattern ──
-    patterns = [
-        [(0, 'A4', 0.5), (0.5, 'G4', 0.5), (1, 'F4', 0.5), (1.5, 'E4', 0.5),
-         (2, 'F4', 1), (3, 'E4', 0.5), (3.5, 'D4', 0.5)],
-        [(0, 'C5', 0.5), (0.5, 'A4', 0.5), (1, 'G4', 0.5), (1.5, 'F4', 0.5),
-         (2, 'E4', 1.5), (3.5, 'D4', 0.5)],
-        [(0, 'D4', 0.5), (0.5, 'E4', 0.5), (1, 'F4', 0.5), (1.5, 'G4', 0.5),
-         (2, 'A4', 1), (3, 'G4', 0.5), (3.5, 'F4', 0.5)],
-        [(0, 'E4', 1), (1, 'F4', 0.5), (1.5, 'E4', 0.5),
-         (2, 'D4', 1), (3, 'E4', 1)],
+    # ── Rhythm guitar: aggressive stabs ──
+    gtr_chords = [
+        [n('A3'), n('C4'), n('E4')],        # Am
+        [n('F3'), n('A3'), n('C4')],        # F
+        [n('D3'), n('F4'), n('A4')],        # Dm
+        [n('E3'), n('G#3'), n('B3'), n('D4')],  # E7
     ]
-    for pat_idx, pattern in enumerate(patterns):
+    for ci, chord in enumerate(gtr_chords):
         for rep in range(2):
-            b = pat_idx * 2 + rep
-            for beat_off, n, dur_beats in pattern:
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                # Aggressive off-beat stabs
+                mix_at(mix, guitar_stab(chord, 0.09) * 1.2, pos + eighth)
+                # Extra stab on "a" for intensity
+                mix_at(mix, guitar_stab(chord, 0.06) * 0.8, pos + 3 * sixteenth)
+
+    # ── Strings: dramatic sustained ──
+    str_chords = [
+        [n('A3'), n('C4'), n('E4'), n('A4')],
+        [n('F3'), n('A3'), n('C4'), n('F4')],
+        [n('D3'), n('F4'), n('A4'), n('D5')],
+        [n('E3'), n('G#3'), n('B3'), n('E4')],
+    ]
+    for ci, chord in enumerate(str_chords):
+        dur = 60.0 / bpm * 8
+        pos = ci * 2 * bar
+        mix_at(mix, string_chord(chord, dur) * 1.1, pos)
+
+    # ── Lead: intense minor key descending patterns ──
+    patterns = [
+        # Bar 0-1: Am — dramatic descending
+        [(0, 'A5', 0.5), (0.5, 'G5', 0.5), (1, 'F5', 0.5), (1.5, 'E5', 0.5),
+         (2, 'C5', 1), (3, 'B4', 0.5), (3.5, 'A4', 0.5)],
+        # Bar 2-3: F — ascending counter
+        [(0, 'F4', 0.5), (0.5, 'A4', 0.5), (1, 'C5', 0.5), (1.5, 'F5', 0.5),
+         (2, 'E5', 1), (3, 'C5', 0.5), (3.5, 'A4', 0.5)],
+        # Bar 4-5: Dm — syncopated
+        [(0, 'D5', 0.75), (0.75, 'E5', 0.25), (1, 'F5', 0.5), (1.5, 'E5', 0.5),
+         (2, 'D5', 0.5), (2.5, 'C5', 0.5), (3, 'A4', 1)],
+        # Bar 6-7: E7 — tension, chromatic
+        [(0, 'E5', 0.5), (0.5, 'F5', 0.5), (1, 'G#5', 0.5), (1.5, 'A5', 0.5),
+         (2, 'G#5', 1), (3, 'E5', 0.75), (3.75, 'D5', 0.25)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
                 pos = b * bar + int(beat_off * beat)
                 dur = 60.0 / bpm * dur_beats * 0.8
-                mix_at(mix, lead_note(note(n), dur) * 1.1, pos)
+                mix_at(mix, lead_synth(n(note_name), dur) * 1.2, pos)
 
-    # ── Stab chords (disco stabs on off-beats) ──
-    stab_chords = [
-        [note('A3'), note('C4'), note('E4')],
-        [note('F3'), note('A3'), note('C4')],
-        [note('G3'), note('B3'), note('D4')],
-        [note('E3'), note('G3'), note('B3')],
+    # ── Disco stab accents (brass-like hits) ──
+    stab_notes = [
+        (0, [n('A4'), n('C5'), n('E5')]),
+        (2, [n('F4'), n('A4'), n('C5')]),
+        (4, [n('D4'), n('F4'), n('A4')]),
+        (6, [n('E4'), n('G#4'), n('B4')]),
     ]
-    for chord_idx, chord in enumerate(stab_chords):
-        for rep in range(2):
-            b = chord_idx * 2 + rep
-            for i in [1, 3]:  # Off-beats
-                pos = b * bar + i * beat + beat // 2
-                for f in chord:
-                    stab = square_wave(f, 0.08, 0.5) * 0.12
-                    stab *= env_pluck(len(stab), 0.04)
-                    mix_at(mix, stab, pos)
+    for b, chord in stab_notes:
+        for sub in range(2):  # 2 bars per chord
+            # Hit on beat 1 of each bar
+            pos = (b + sub) * bar
+            for f in chord:
+                hit = square(f, 0.06, 0.5) * 0.1
+                hit *= env_decay(len(hit), 0.03)
+                mix_at(mix, hit, pos)
+            # Hit on the "and" of beat 3
+            pos2 = (b + sub) * bar + beat * 2 + eighth
+            for f in chord:
+                hit = square(f, 0.04, 0.5) * 0.08
+                hit *= env_decay(len(hit), 0.02)
+                mix_at(mix, hit, pos2)
 
     return mix, "boss_theme"
 
 
-# ── Save as WAV ───────────────────────────────────────────────────────
+# ── Save ──────────────────────────────────────────────────────────────
 
-def save_wav_stereo(filename: str, data: np.ndarray):
-    """Save as 16-bit stereo WAV (duplicate mono to both channels)."""
+def save_wav_stereo(filename, data):
     peak = np.max(np.abs(data))
     if peak > 0:
         data = data / peak * 0.75
     data = np.clip(data, -1, 1)
     samples = (data * 32767).astype(np.int16)
-    # Interleave for stereo
     stereo = np.column_stack([samples, samples]).flatten()
 
     path = OUTPUT_DIR / filename
@@ -407,7 +558,8 @@ def save_wav_stereo(filename: str, data: np.ndarray):
 # ── Main ──────────────────────────────────────────────────────────────
 
 def main():
-    print(f"Generating music to: {OUTPUT_DIR}")
+    np.random.seed(42)  # Reproducible noise
+    print(f"Generating disco music to: {OUTPUT_DIR}")
 
     tracks = [create_menu_theme, create_level_theme, create_boss_theme]
     for gen_fn in tracks:
@@ -417,9 +569,7 @@ def main():
         duration = len(data) / RATE
         print(f"  [OK] {wav_name} ({duration:.1f}s)")
 
-    print(f"\nDone! {len(tracks)} music tracks generated.")
-    print("\nTo convert to OGG (optional, smaller files):")
-    print("  ffmpeg -i menu_theme.wav -c:a libvorbis -q:a 4 menu_theme.ogg")
+    print(f"\nDone! {len(tracks)} disco tracks generated.")
 
 
 if __name__ == "__main__":

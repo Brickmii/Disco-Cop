@@ -6,6 +6,19 @@ enum GameState { MENU, LOBBY, PLAYING, PAUSED, GAME_OVER, VICTORY }
 const MAX_PLAYERS := 4
 const DEFAULT_LIVES := 3
 
+const LEVEL_ORDER: Array[String] = [
+	"tutorial", "level_01", "level_02", "level_03", "level_04", "level_05",
+]
+
+const LEVEL_SCENES: Dictionary = {
+	"tutorial": "res://scenes/levels/test_level.tscn",
+	"level_01": "res://scenes/levels/level_01.tscn",
+	"level_02": "res://scenes/levels/level_02.tscn",
+	"level_03": "res://scenes/levels/level_03.tscn",
+	"level_04": "res://scenes/levels/level_04.tscn",
+	"level_05": "res://scenes/levels/level_05.tscn",
+}
+
 var current_state: GameState = GameState.MENU
 var current_level: String = ""
 var player_data: Array[Dictionary] = []  # [{index, device_id, lives, node, active}]
@@ -96,6 +109,14 @@ func get_player_weapons(player_index: int) -> Array[WeaponData]:
 	if player_weapons.has(player_index):
 		return player_weapons[player_index]
 	return [] as Array[WeaponData]
+
+
+func get_next_level() -> String:
+	## Returns the next level key, or "" if game is complete.
+	var idx := LEVEL_ORDER.find(current_level)
+	if idx >= 0 and idx < LEVEL_ORDER.size() - 1:
+		return LEVEL_ORDER[idx + 1]
+	return ""
 
 
 func reset_game() -> void:

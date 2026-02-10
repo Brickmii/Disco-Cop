@@ -54,6 +54,7 @@ func _show_victory() -> void:
 	_accept_cooldown = 0.5
 	var next_level := GameManager.get_next_level()
 	if next_level == "":
+		GameManager.unlock_next_mode()
 		title_label.text = "YOU WIN!"
 		subtitle_label.text = "The disco lives forever!\n\nPress ENTER to continue"
 	else:

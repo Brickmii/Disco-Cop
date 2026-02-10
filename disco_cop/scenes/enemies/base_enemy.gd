@@ -28,8 +28,10 @@ func _ready() -> void:
 	health_component = HealthComponent.new()
 	add_child(health_component)
 	if enemy_data:
-		health_component.max_health = enemy_data.max_health
-		health_component.current_health = enemy_data.max_health
+		var scale: Dictionary = GameManager.get_difficulty_scale()
+		var scaled_hp: float = enemy_data.max_health * scale["hp"]
+		health_component.max_health = scaled_hp
+		health_component.current_health = scaled_hp
 	health_component.died.connect(_on_died)
 
 	collision_layer = 4  # Enemies layer (bit 3)
@@ -147,7 +149,9 @@ func _state_hurt(_delta: float) -> void:
 func _perform_attack() -> void:
 	## Override: deal damage to target.
 	if _target and _target.has_method("take_damage"):
-		_target.take_damage(enemy_data.damage, global_position)
+		var scale: Dictionary = GameManager.get_difficulty_scale()
+		var dmg: float = enemy_data.damage * scale["damage"]
+		_target.take_damage(dmg, global_position)
 
 
 func _is_flying() -> bool:

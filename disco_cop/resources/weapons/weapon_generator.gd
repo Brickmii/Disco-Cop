@@ -81,6 +81,10 @@ static func _init_manufacturers() -> void:
 static func generate(level: int = 1, forced_rarity: Rarity.Tier = -1, forced_type: WeaponData.WeaponType = -1) -> WeaponData:
 	var weapon := WeaponData.new()
 
+	# NG+ loot bonus: higher effective level = better scaling
+	var scale: Dictionary = GameManager.get_difficulty_scale()
+	level += scale["loot_bonus"] as int
+
 	# Roll rarity
 	if forced_rarity >= 0:
 		weapon.rarity = forced_rarity as Rarity.Tier

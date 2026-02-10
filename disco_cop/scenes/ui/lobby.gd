@@ -48,6 +48,23 @@ func _input(event: InputEvent) -> void:
 			_update_slot(result)
 			_update_start_label()
 
+	# Mode cycle — Left/Right keys or LB/RB
+	if GameManager.unlocked_modes.size() > 1:
+		var cycle := 0
+		if event is InputEventKey and event.pressed:
+			if event.keycode == KEY_LEFT:
+				cycle = -1
+			elif event.keycode == KEY_RIGHT:
+				cycle = 1
+		if event is InputEventJoypadButton and event.pressed:
+			if event.button_index == JOY_BUTTON_LEFT_SHOULDER:
+				cycle = -1
+			elif event.button_index == JOY_BUTTON_RIGHT_SHOULDER:
+				cycle = 1
+		if cycle != 0:
+			GameManager.cycle_play_mode(cycle)
+			_update_start_label()
+
 	# Skip tutorial — Y key or gamepad Y button
 	var skip_pressed := false
 	if event is InputEventKey and event.pressed and event.keycode == KEY_Y:
@@ -82,8 +99,12 @@ func _update_slot(index: int) -> void:
 
 func _update_start_label() -> void:
 	var count := GameManager.get_active_player_count()
+	var mode_name: String = GameManager.MODE_NAMES[GameManager.play_mode]
+	var mode_hint := ""
+	if GameManager.unlocked_modes.size() > 1:
+		mode_hint = " | LB/RB: Change Mode"
 	if start_label:
-		start_label.text = "%d Player(s) - ENTER/START: Begin | Y: Skip Tutorial" % count
+		start_label.text = "%d Player(s) [%s] - ENTER: Begin | Y: Skip%s" % [count, mode_name, mode_hint]
 
 
 func _on_player_joined(player_index: int, _device_id: int) -> void:

@@ -1,0 +1,102 @@
+[gd_scene load_steps=16 format=3 uid="uid://c2rollerskater01"]
+
+[ext_resource type="Script" path="res://scenes/enemies/roller_skater.gd" id="1_roller_skater"]
+[ext_resource type="Texture2D" uid="uid://h6lhu3h3f5ht" path="res://assets/sprites/enemies/skater_skate_sheet.png" id="2_skate"]
+[ext_resource type="Texture2D" uid="uid://dwpngdj4nqvau" path="res://assets/sprites/enemies/skater_charge_sheet.png" id="3_charge"]
+[ext_resource type="Texture2D" uid="uid://c3w6x8aliqeqi" path="res://assets/sprites/enemies/skater_hurt_sheet.png" id="4_hurt"]
+[ext_resource type="Texture2D" uid="uid://1nq1yinyx0oq" path="res://assets/sprites/enemies/skater_death_sheet.png" id="5_death"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_skater"]
+size = Vector2(50, 100)
+
+[sub_resource type="AtlasTexture" id="skate_0"]
+atlas = ExtResource("2_skate")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="skate_1"]
+atlas = ExtResource("2_skate")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="skate_2"]
+atlas = ExtResource("2_skate")
+region = Rect2(200, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="charge_0"]
+atlas = ExtResource("3_charge")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="charge_1"]
+atlas = ExtResource("3_charge")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="hurt_0"]
+atlas = ExtResource("4_hurt")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="death_0"]
+atlas = ExtResource("5_death")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="death_1"]
+atlas = ExtResource("5_death")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_skater"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("skate_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("skate_2")
+}],
+"loop": true,
+"name": &"skate",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("charge_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("charge_1")
+}],
+"loop": false,
+"name": &"charge",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurt_0")
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("death_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_1")
+}],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
+
+[node name="RollerSkater" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_roller_skater")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -50)
+shape = SubResource("RectangleShape2D_skater")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -50)
+sprite_frames = SubResource("SpriteFrames_skater")

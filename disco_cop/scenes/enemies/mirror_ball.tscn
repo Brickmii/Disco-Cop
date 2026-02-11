@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3 uid="uid://c2mirrorball01"]
+
+[ext_resource type="Script" path="res://scenes/enemies/mirror_ball.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mb"]
+size = Vector2(20, 20)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mb"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"walk",
+"speed": 8.0}, {
+"frames": [],
+"loop": false,
+"name": &"attack",
+"speed": 10.0}, {
+"frames": [],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0}, {
+"frames": [],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
+
+[node name="MirrorBall" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_mb")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -12)
+sprite_frames = SubResource("SpriteFrames_mb")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

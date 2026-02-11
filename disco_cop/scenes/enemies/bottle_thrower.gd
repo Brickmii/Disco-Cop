@@ -1,30 +1,32 @@
 extends BaseEnemy
-## Spray Painter — ranged ICE shooter. Maintains distance, fires ice-element projectiles.
+## Bottle Thrower — ranged. Maintains distance, fires 3-burst bottles.
 
-const PREFERRED_DISTANCE := 180.0
+const PREFERRED_DISTANCE := 200.0
 const BRAKE_FRICTION := 0.92
-const APPROACH_SPEED_MULT := 1.0
-const RETREAT_SPEED_MULT := 0.6
+const BURST_COUNT := 3
+const BURST_INTERVAL := 0.15
 
 var _projectile_scene: PackedScene
+var _burst_remaining := 0
+var _burst_timer := 0.0
 
 
 func _ready() -> void:
 	if enemy_data == null:
 		enemy_data = EnemyData.new()
-		enemy_data.enemy_name = "Spray Painter"
-		enemy_data.enemy_type = EnemyData.EnemyType.SPRAY_PAINTER
-		enemy_data.max_health = 20.0
+		enemy_data.enemy_name = "Bottle Thrower"
+		enemy_data.enemy_type = EnemyData.EnemyType.BOTTLE_THROWER
+		enemy_data.max_health = 32.0
 		enemy_data.move_speed = 100.0
-		enemy_data.damage = 10.0
-		enemy_data.attack_range = 260.0
-		enemy_data.detection_range = 320.0
-		enemy_data.attack_cooldown = 1.5
+		enemy_data.damage = 14.0
+		enemy_data.attack_range = 280.0
+		enemy_data.detection_range = 360.0
+		enemy_data.attack_cooldown = 2.0
 		enemy_data.loot_chance = 0.25
 	super._ready()
 	_projectile_scene = preload("res://scenes/weapons/projectile.tscn")
-	if ObjectPool.get_pool_size("spray_painter_projectiles") == 0:
-		ObjectPool.preload_pool("spray_painter_projectiles", _projectile_scene, 15)
+	if ObjectPool.get_pool_size("bottle_projectiles") == 0:
+		ObjectPool.preload_pool("bottle_projectiles", _projectile_scene, 20)
 
 
 func _state_patrol(delta: float) -> void:
@@ -46,7 +48,7 @@ func _state_patrol(delta: float) -> void:
 	_play_sprite_animation("walk")
 
 
-func _state_chase(_delta: float) -> void:
+func _state_chase(delta: float) -> void:
 	if _target == null:
 		_change_state(State.PATROL)
 		return
@@ -54,11 +56,10 @@ func _state_chase(_delta: float) -> void:
 	var dist := _distance_to_target()
 	var dir: float = sign(_target.global_position.x - global_position.x)
 
-	# Maintain preferred distance
 	if dist > PREFERRED_DISTANCE + 30.0:
-		velocity.x = dir * enemy_data.move_speed * APPROACH_SPEED_MULT
+		velocity.x = dir * enemy_data.move_speed
 	elif dist < PREFERRED_DISTANCE - 30.0:
-		velocity.x = -dir * enemy_data.move_speed * RETREAT_SPEED_MULT
+		velocity.x = -dir * enemy_data.move_speed * 0.6
 	else:
 		velocity.x *= BRAKE_FRICTION
 
@@ -72,8 +73,18 @@ func _state_chase(_delta: float) -> void:
 	_play_sprite_animation("walk")
 
 
-func _state_attack(_delta: float) -> void:
+func _state_attack(delta: float) -> void:
 	velocity.x *= BRAKE_FRICTION
+
+	# Handle burst firing
+	if _burst_remaining > 0:
+		_burst_timer -= delta
+		if _burst_timer <= 0:
+			_fire_bottle()
+			_burst_remaining -= 1
+			_burst_timer = BURST_INTERVAL
+		_play_sprite_animation("walk")
+		return
 
 	if _attack_timer <= 0:
 		_perform_attack()
@@ -83,22 +94,30 @@ func _state_attack(_delta: float) -> void:
 
 
 func _perform_attack() -> void:
+	_burst_remaining = BURST_COUNT
+	_burst_timer = 0.0
+	_fire_bottle()
+	_burst_remaining -= 1
+
+
+func _fire_bottle() -> void:
 	if _target == null:
 		return
-	var proj: Node2D = ObjectPool.get_instance("spray_painter_projectiles") as Node2D
+	var proj: Node2D = ObjectPool.get_instance("bottle_projectiles") as Node2D
 	if proj == null:
 		return
 
 	var dir := (_target.global_position - global_position).normalized()
+	dir = dir.rotated(randf_range(-0.08, 0.08))
 	var weapon := WeaponData.new()
 	var scale: Dictionary = GameManager.get_difficulty_scale()
 	weapon.damage = enemy_data.damage * scale["damage"]
 	weapon.projectile_speed = 320.0
-	weapon.knockback = 30.0
+	weapon.knockback = 40.0
 	weapon.crit_chance = 0.0
 	weapon.crit_multiplier = 1.0
 	weapon.projectile_size = 1.0
-	weapon.element = WeaponData.Element.ICE
+	weapon.element = WeaponData.Element.NONE
 
 	var offset_x: float = 20.0 if facing_right else -20.0
 	proj.activate(global_position + Vector2(offset_x, -20), dir, weapon, -1, false)

@@ -1,26 +1,19 @@
 extends BaseEnemy
-## Biker — heavy tank. Slow charge, massive damage, long self-stun after attack.
-
-const CHARGE_ACCEL := 300.0
-const MAX_CHARGE_SPEED := 120.0
-
-var _charge_speed := 0.0
-var _stunned := false
-var _stun_timer := 0.0
+## Floor Bouncer — tanky melee for disco floor.
 
 
 func _ready() -> void:
 	if enemy_data == null:
 		enemy_data = EnemyData.new()
-		enemy_data.enemy_name = "Biker"
-		enemy_data.enemy_type = EnemyData.EnemyType.BIKER
-		enemy_data.max_health = 100.0
-		enemy_data.move_speed = 70.0
-		enemy_data.damage = 30.0
-		enemy_data.attack_range = 55.0
-		enemy_data.detection_range = 280.0
-		enemy_data.attack_cooldown = 2.5
-		enemy_data.loot_chance = 0.35
+		enemy_data.enemy_name = "Floor Bouncer"
+		enemy_data.enemy_type = EnemyData.EnemyType.FLOOR_BOUNCER
+		enemy_data.max_health = 65.0
+		enemy_data.move_speed = 90.0
+		enemy_data.damage = 22.0
+		enemy_data.attack_range = 42.0
+		enemy_data.detection_range = 270.0
+		enemy_data.attack_cooldown = 2.0
+		enemy_data.loot_chance = 0.3
 	super._ready()
 
 
@@ -43,42 +36,20 @@ func _state_patrol(delta: float) -> void:
 	_play_sprite_animation("walk")
 
 
-func _state_chase(delta: float) -> void:
-	if _stunned:
-		_stun_timer -= delta
-		if _stun_timer <= 0:
-			_stunned = false
-		else:
-			velocity.x *= 0.9
-			_play_sprite_animation("walk")
-			return
-
+func _state_chase(_delta: float) -> void:
 	if _target == null:
 		_change_state(State.PATROL)
 		return
 
 	var dir: float = sign(_target.global_position.x - global_position.x)
-	_charge_speed = minf(_charge_speed + CHARGE_ACCEL * delta, MAX_CHARGE_SPEED)
-	velocity.x = dir * _charge_speed
+	velocity.x = dir * enemy_data.move_speed
 	facing_right = dir > 0
 	_update_sprite_facing()
 
 	if _distance_to_target() < enemy_data.attack_range:
 		_change_state(State.ATTACK)
 	elif _distance_to_target() > enemy_data.detection_range * 1.5:
-		_charge_speed = 0.0
 		_change_state(State.PATROL)
-	_play_sprite_animation("walk")
-
-
-func _state_attack(_delta: float) -> void:
-	if _attack_timer <= 0:
-		_perform_attack()
-		_attack_timer = enemy_data.attack_cooldown
-		_stunned = true
-		_stun_timer = 0.8
-		_charge_speed = 0.0
-		_change_state(State.CHASE)
 	_play_sprite_animation("walk")
 
 
@@ -87,10 +58,6 @@ func _perform_attack() -> void:
 		var scale: Dictionary = GameManager.get_difficulty_scale()
 		var dmg: float = enemy_data.damage * scale["damage"]
 		_target.take_damage(dmg, global_position)
-		# High knockback push
-		if _target.has_method("apply_knockback"):
-			var kb_dir: float = sign(_target.global_position.x - global_position.x)
-			_target.apply_knockback(Vector2(kb_dir * 250.0, -80.0))
 
 
 func take_damage(amount: float, source_position: Vector2 = Vector2.ZERO) -> void:
@@ -98,4 +65,3 @@ func take_damage(amount: float, source_position: Vector2 = Vector2.ZERO) -> void
 	if source_position != Vector2.ZERO:
 		var knockback_dir: float = sign(global_position.x - source_position.x)
 		velocity.x = knockback_dir * 60.0
-	_charge_speed = 0.0

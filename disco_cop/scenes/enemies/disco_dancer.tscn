@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3 uid="uid://c2discodancer01"]
+
+[ext_resource type="Script" path="res://scenes/enemies/disco_dancer.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dd"]
+size = Vector2(16, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_dd"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"walk",
+"speed": 10.0}, {
+"frames": [],
+"loop": false,
+"name": &"attack",
+"speed": 10.0}, {
+"frames": [],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0}, {
+"frames": [],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
+
+[node name="DiscoDancer" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -18)
+shape = SubResource("RectangleShape2D_dd")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -20)
+sprite_frames = SubResource("SpriteFrames_dd")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

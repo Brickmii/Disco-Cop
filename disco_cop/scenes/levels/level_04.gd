@@ -1,11 +1,11 @@
 extends LevelBase
-## Level 04: CBGB Punk Alley. Dark alley with punk rockers, mohawk divers, spray painters, and bikers.
+## Level 04: Blondie Concert at CBGB. Stage divers, pogo punks, bottle throwers, and bouncers.
 
-var _punk_rocker_scene: PackedScene = preload("res://scenes/enemies/punk_rocker.tscn")
-var _mohawk_diver_scene: PackedScene = preload("res://scenes/enemies/mohawk_diver.tscn")
-var _spray_painter_scene: PackedScene = preload("res://scenes/enemies/spray_painter.tscn")
-var _biker_scene: PackedScene = preload("res://scenes/enemies/biker.tscn")
-var _boss_scene: PackedScene = preload("res://scenes/bosses/boss_joey_ramone.tscn")
+var _stage_diver_scene: PackedScene = preload("res://scenes/enemies/stage_diver.tscn")
+var _pogo_punk_scene: PackedScene = preload("res://scenes/enemies/pogo_punk.tscn")
+var _bottle_thrower_scene: PackedScene = preload("res://scenes/enemies/bottle_thrower.tscn")
+var _bouncer_scene: PackedScene = preload("res://scenes/enemies/bouncer.tscn")
+var _boss_scene: PackedScene = preload("res://scenes/bosses/boss_debbie_harry.tscn")
 
 
 func _ready() -> void:
@@ -32,12 +32,12 @@ func _on_boss_victory() -> void:
 
 
 func _build_scroll_lock_zones() -> void:
-	# Zone 1 (x:800): "Alley" — 3 punk_rocker + 1 spray_painter
+	# Zone 1 (x:800): 2 pogo_punk + 1 stage_diver + 1 bottle_thrower
 	var zone1 := ScrollLockZone.new()
 	zone1.position = Vector2(800, 450)
 	zone1.zone_rect = Rect2(-500, -250, 1000, 550)
 	var spawner1 := EnemySpawner.new()
-	spawner1.enemy_scenes = [_punk_rocker_scene, _punk_rocker_scene, _punk_rocker_scene, _spray_painter_scene]
+	spawner1.enemy_scenes = [_pogo_punk_scene, _pogo_punk_scene, _stage_diver_scene, _bottle_thrower_scene]
 	spawner1.spawn_count = 5
 	spawner1.spawn_radius = 150.0
 	spawner1.position = Vector2(0, 238)
@@ -51,12 +51,12 @@ func _build_scroll_lock_zones() -> void:
 	zone1.add_child(zone1_shape)
 	add_child(zone1)
 
-	# Zone 2 (x:2200): "Back Alley" — 1 biker + 2 punk_rocker + 1 mohawk_diver + 1 spray_painter
+	# Zone 2 (x:2200): 1 bouncer + 2 stage_diver + 1 pogo_punk + 1 bottle_thrower
 	var zone2 := ScrollLockZone.new()
 	zone2.position = Vector2(2200, 450)
 	zone2.zone_rect = Rect2(-600, -250, 1200, 550)
 	var spawner2 := EnemySpawner.new()
-	spawner2.enemy_scenes = [_biker_scene, _punk_rocker_scene, _punk_rocker_scene, _mohawk_diver_scene, _spray_painter_scene]
+	spawner2.enemy_scenes = [_bouncer_scene, _stage_diver_scene, _stage_diver_scene, _pogo_punk_scene, _bottle_thrower_scene]
 	spawner2.spawn_count = 6
 	spawner2.spawn_radius = 200.0
 	spawner2.position = Vector2(0, 238)
@@ -70,12 +70,12 @@ func _build_scroll_lock_zones() -> void:
 	zone2.add_child(zone2_shape)
 	add_child(zone2)
 
-	# Zone 3 (x:3800): "CBGB Exterior" — 2 biker + 2 mohawk_diver + 1 spray_painter + 2 punk_rocker
+	# Zone 3 (x:3800): 1 bouncer + 2 bottle_thrower + 2 pogo_punk + 1 stage_diver
 	var zone3 := ScrollLockZone.new()
 	zone3.position = Vector2(3800, 450)
 	zone3.zone_rect = Rect2(-700, -250, 1400, 550)
 	var spawner3 := EnemySpawner.new()
-	spawner3.enemy_scenes = [_biker_scene, _biker_scene, _mohawk_diver_scene, _mohawk_diver_scene, _spray_painter_scene, _punk_rocker_scene, _punk_rocker_scene]
+	spawner3.enemy_scenes = [_bouncer_scene, _bottle_thrower_scene, _bottle_thrower_scene, _pogo_punk_scene, _pogo_punk_scene, _stage_diver_scene]
 	spawner3.spawn_count = 8
 	spawner3.spawn_radius = 250.0
 	spawner3.position = Vector2(0, 238)
@@ -89,12 +89,12 @@ func _build_scroll_lock_zones() -> void:
 	zone3.add_child(zone3_shape)
 	add_child(zone3)
 
-	# Zone 4 (x:5200): "Mosh Pit" — 2 biker + 3 mohawk_diver + 2 spray_painter + 2 punk_rocker
+	# Zone 4 (x:5200): 2 bouncer + 2 stage_diver + 2 bottle_thrower + 2 pogo_punk
 	var zone4 := ScrollLockZone.new()
 	zone4.position = Vector2(5200, 450)
 	zone4.zone_rect = Rect2(-700, -250, 1400, 550)
 	var spawner4 := EnemySpawner.new()
-	spawner4.enemy_scenes = [_biker_scene, _biker_scene, _mohawk_diver_scene, _mohawk_diver_scene, _mohawk_diver_scene, _spray_painter_scene, _spray_painter_scene, _punk_rocker_scene, _punk_rocker_scene]
+	spawner4.enemy_scenes = [_bouncer_scene, _bouncer_scene, _stage_diver_scene, _stage_diver_scene, _bottle_thrower_scene, _bottle_thrower_scene, _pogo_punk_scene, _pogo_punk_scene]
 	spawner4.spawn_count = 10
 	spawner4.spawn_radius = 300.0
 	spawner4.position = Vector2(0, 238)

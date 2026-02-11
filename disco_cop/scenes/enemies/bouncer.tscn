@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3 uid="uid://c2bouncer01"]
+
+[ext_resource type="Script" path="res://scenes/enemies/bouncer.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bc"]
+size = Vector2(24, 46)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bc"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"walk",
+"speed": 6.0}, {
+"frames": [],
+"loop": false,
+"name": &"attack",
+"speed": 8.0}, {
+"frames": [],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0}, {
+"frames": [],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
+
+[node name="Bouncer" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -23)
+shape = SubResource("RectangleShape2D_bc")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -25)
+sprite_frames = SubResource("SpriteFrames_bc")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

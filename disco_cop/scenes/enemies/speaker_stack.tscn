@@ -1,22 +1,129 @@
-[gd_scene load_steps=3 format=3 uid="uid://c2speakerstack01"]
+[gd_scene load_steps=19 format=3 uid="uid://c2speakerstack01"]
 
-[ext_resource type="Script" path="res://scenes/enemies/speaker_stack.gd" id="1_speaker_stack"]
+[ext_resource type="Script" path="res://scenes/enemies/speaker_stack.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cbhwn8ekn1o0c" path="res://assets/sprites/enemies/speaker_walk_sheet.png" id="2_walk_sheet"]
+[ext_resource type="Texture2D" uid="uid://c8kmqyjn102a" path="res://assets/sprites/enemies/speaker_attack_sheet.png" id="3_attack_sheet"]
+[ext_resource type="Texture2D" uid="uid://cp1m62ogcehpn" path="res://assets/sprites/enemies/speaker_hurt_sheet.png" id="4_hurt_sheet"]
+[ext_resource type="Texture2D" uid="uid://4vii7evqgnr6" path="res://assets/sprites/enemies/speaker_death_sheet.png" id="5_death_sheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_speaker"]
-size = Vector2(30, 50)
+size = Vector2(26, 46)
+
+[sub_resource type="AtlasTexture" id="walk_0"]
+atlas = ExtResource("2_walk_sheet")
+region = Rect2(0, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="walk_1"]
+atlas = ExtResource("2_walk_sheet")
+region = Rect2(30, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="attack_0"]
+atlas = ExtResource("3_attack_sheet")
+region = Rect2(0, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="attack_1"]
+atlas = ExtResource("3_attack_sheet")
+region = Rect2(30, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="attack_2"]
+atlas = ExtResource("3_attack_sheet")
+region = Rect2(60, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="attack_3"]
+atlas = ExtResource("3_attack_sheet")
+region = Rect2(90, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="hurt_0"]
+atlas = ExtResource("4_hurt_sheet")
+region = Rect2(0, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="hurt_1"]
+atlas = ExtResource("4_hurt_sheet")
+region = Rect2(30, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="death_0"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(0, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="death_1"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(30, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="death_2"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(60, 0, 30, 50)
+
+[sub_resource type="AtlasTexture" id="death_3"]
+atlas = ExtResource("5_death_sheet")
+region = Rect2(90, 0, 30, 50)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_speaker"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("walk_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_1")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("attack_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack_3")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 10.0}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("hurt_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("hurt_1")
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 5.0}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("death_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("death_3")
+}],
+"loop": false,
+"name": &"death",
+"speed": 8.0
+}]
 
 [node name="SpeakerStack" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 1
-script = ExtResource("1_speaker_stack")
+script = ExtResource("1_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -25)
+position = Vector2(0, -23)
 shape = SubResource("RectangleShape2D_speaker")
 
-[node name="Visual" type="ColorRect" parent="."]
-offset_left = -15.0
-offset_top = -50.0
-offset_right = 15.0
-offset_bottom = 0.0
-color = Color(0.25, 0.25, 0.25, 1)
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -25)
+sprite_frames = SubResource("SpriteFrames_speaker")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

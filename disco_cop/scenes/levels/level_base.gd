@@ -28,6 +28,7 @@ func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
 	EventBus.boss_defeated.connect(_on_boss_defeated)
 	EventBus.loot_picked_up.connect(_on_loot_picked_up)
+	EventBus.player_died.connect(_on_player_died)
 	EventBus.level_started.emit()
 	GameManager.change_state(GameManager.GameState.PLAYING)
 
@@ -76,6 +77,25 @@ func _spawn_loot_at(pos: Vector2, drop_data: Dictionary = {}) -> void:
 
 func _on_loot_picked_up(_player_index: int, _item: Resource) -> void:
 	GameManager.run_stats["loot_collected"] += 1
+
+
+func _on_player_died(player_index: int) -> void:
+	var has_lives := GameManager.lose_life(player_index)
+	if GameManager.all_players_dead():
+		# Slowmo death — restore speed before game over fires
+		Engine.time_scale = 0.3
+		await get_tree().create_timer(0.6).timeout  # 0.6 real = ~0.18 game
+		Engine.time_scale = 1.0
+		GameManager.change_state(GameManager.GameState.GAME_OVER)
+		return
+	if has_lives:
+		# Respawn after brief delay
+		await get_tree().create_timer(1.0).timeout
+		var pd: Dictionary = GameManager.player_data[player_index]
+		var player_node: Node = pd["node"]
+		if player_node and player_node.has_method("respawn"):
+			var spawn_pos: Vector2 = spawn_points[0] if not spawn_points.is_empty() else Vector2(200, 600)
+			player_node.respawn(spawn_pos)
 
 
 func _on_boss_defeated(boss_node: Node) -> void:

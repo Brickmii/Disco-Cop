@@ -19,6 +19,7 @@ const JUMP_BUFFER_TIME := 0.1
 const HURT_KNOCKBACK := Vector2(-200, -150)
 const HURT_DURATION := 0.3
 const INVINCIBILITY_DURATION := 1.0
+const RESPAWN_INVINCIBILITY := 2.0
 const STUCK_DAMAGE := 5.0
 const STUCK_DAMAGE_INTERVAL := 0.5
 const STUCK_WIGGLES_TO_ESCAPE := 3
@@ -464,4 +465,20 @@ func _on_shield_changed(current: float, maximum: float) -> void:
 
 func _on_died() -> void:
 	_change_state(State.DEAD)
+	visible = false
 	EventBus.player_died.emit(player_index)
+
+
+func respawn(pos: Vector2) -> void:
+	global_position = pos
+	health_component.current_health = health_component.max_health
+	health_component.health_changed.emit(health_component.current_health, health_component.max_health)
+	if shield_component.shield_data:
+		shield_component.current_shield = shield_component.shield_data.capacity
+		shield_component.shield_changed.emit(shield_component.current_shield, shield_component.shield_data.capacity)
+	velocity = Vector2.ZERO
+	invincibility_timer = RESPAWN_INVINCIBILITY
+	is_invincible = true
+	visible = true
+	_change_state(State.FALL)
+	EventBus.player_respawned.emit(player_index)

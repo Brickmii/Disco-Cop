@@ -16,12 +16,22 @@ const HUD_POSITIONS := [
 ]
 
 
+var _toast_container: VBoxContainer
+
+
 func _ready() -> void:
 	EventBus.player_spawned.connect(_on_player_spawned)
 	EventBus.boss_spawned.connect(_on_boss_spawned)
 	EventBus.boss_defeated.connect(_on_boss_defeated)
 	EventBus.boss_phase_changed.connect(_on_boss_phase_changed)
 	EventBus.damage_dealt.connect(_on_damage_dealt)
+	EventBus.weapon_picked_up.connect(_on_weapon_picked_up)
+
+	_toast_container = VBoxContainer.new()
+	_toast_container.position = Vector2(440, 620)
+	_toast_container.size = Vector2(400, 100)
+	_toast_container.alignment = BoxContainer.ALIGNMENT_END
+	add_child(_toast_container)
 
 	set_process(false)  # Only process when boss is active
 	if boss_health_bar:
@@ -121,3 +131,19 @@ func _spawn_damage_number(pos: Vector2, amount: float, is_crit: bool, element: i
 	tween.tween_property(label, "position:y", label.position.y - 40, 0.8)
 	tween.tween_property(label, "modulate:a", 0.0, 0.8).set_delay(0.3)
 	tween.chain().tween_callback(label.queue_free)
+
+
+func _on_weapon_picked_up(_player_index: int, weapon_data: Resource) -> void:
+	if not weapon_data is WeaponData:
+		return
+	var wd: WeaponData = weapon_data as WeaponData
+	var toast := Label.new()
+	toast.text = wd.get_display_name()
+	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast.modulate = wd.get_rarity_color()
+	toast.add_theme_font_size_override("font_size", 18)
+	_toast_container.add_child(toast)
+
+	var tw := toast.create_tween()
+	tw.tween_property(toast, "modulate:a", 0.0, 0.5).set_delay(1.5)
+	tw.tween_callback(toast.queue_free)

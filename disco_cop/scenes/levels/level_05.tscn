@@ -1,8 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://c2level05"]
+[gd_scene load_steps=10 format=3 uid="uid://c2level05"]
 
 [ext_resource type="Script" path="res://scenes/levels/level_05.gd" id="1_level"]
 [ext_resource type="Script" path="res://scenes/camera/multi_target_camera.gd" id="2_camera"]
 [ext_resource type="Script" path="res://scenes/camera/screen_shake.gd" id="3_shake"]
+[ext_resource type="Texture2D" uid="uid://y01a8uyb1c21" path="res://assets/sprites/environment/parallax_disco_floor_sky.png" id="4_disco_sky"]
+[ext_resource type="Texture2D" uid="uid://bhawb8xesy3f6" path="res://assets/sprites/environment/parallax_disco_floor_mid.png" id="5_disco_mid"]
+[ext_resource type="Texture2D" uid="uid://j3mo3o5mmdnn" path="res://assets/sprites/environment/parallax_disco_floor_near.png" id="6_disco_near"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(5500, 32)
@@ -22,6 +25,35 @@ script = ExtResource("2_camera")
 
 [node name="ScreenShake" type="Node" parent="MultiTargetCamera"]
 script = ExtResource("3_shake")
+
+[node name="ParallaxBG" type="ParallaxBackground" parent="."]
+
+[node name="DiscoSky" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.1, 0.0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/DiscoSky"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("4_disco_sky")
+
+[node name="DiscoMid" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.3, 0.0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/DiscoMid"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("5_disco_mid")
+
+[node name="DiscoNear" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.6, 0.0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite" type="Sprite2D" parent="ParallaxBG/DiscoNear"]
+position = Vector2(640, 360)
+scale = Vector2(2, 2)
+texture = ExtResource("6_disco_near")
 
 [node name="Floor" type="StaticBody2D" parent="."]
 position = Vector2(2750, 704)
@@ -113,38 +145,3 @@ offset_top = -8.0
 offset_right = 80.0
 offset_bottom = 8.0
 color = Color(0.35, 0.1, 0.3, 1)
-
-[node name="ParallaxBG" type="ParallaxBackground" parent="."]
-
-[node name="DiscoSky" type="ParallaxLayer" parent="ParallaxBG"]
-motion_scale = Vector2(0.1, 0.0)
-motion_mirroring = Vector2(1280, 0)
-
-[node name="SkyRect" type="ColorRect" parent="ParallaxBG/DiscoSky"]
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.15, 0.05, 0.25, 1)
-
-[node name="DiscoMid" type="ParallaxLayer" parent="ParallaxBG"]
-motion_scale = Vector2(0.3, 0.0)
-motion_mirroring = Vector2(1280, 0)
-
-[node name="MidRect" type="ColorRect" parent="ParallaxBG/DiscoMid"]
-offset_left = 0.0
-offset_top = 200.0
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.2, 0.08, 0.3, 1)
-
-[node name="DiscoNear" type="ParallaxLayer" parent="ParallaxBG"]
-motion_scale = Vector2(0.6, 0.0)
-motion_mirroring = Vector2(1280, 0)
-
-[node name="NearRect" type="ColorRect" parent="ParallaxBG/DiscoNear"]
-offset_left = 0.0
-offset_top = 500.0
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.25, 0.1, 0.35, 1)

@@ -81,9 +81,10 @@ func _update_heatseekers() -> void:
 
 		var closest: Node2D = _find_closest_player()
 		if closest:
-			var desired_dir := (closest.global_position - proj.global_position).normalized()
+			var proj_pos: Vector2 = proj.global_position
+			var desired_dir: Vector2 = (closest.global_position - proj_pos).normalized()
 			var current_dir: Vector2 = proj.direction
-			var new_dir := current_dir.lerp(desired_dir, HEATSEEKER_LERP).normalized()
+			var new_dir: Vector2 = current_dir.lerp(desired_dir, HEATSEEKER_LERP).normalized()
 			proj.direction = new_dir
 
 	_active_heatseekers = valid

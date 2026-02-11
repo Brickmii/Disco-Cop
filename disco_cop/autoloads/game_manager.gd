@@ -6,6 +6,7 @@ enum PlayMode { NORMAL, DISCO_FEVER, SATURDAY_NIGHT_SLAUGHTER }
 
 const MAX_PLAYERS := 4
 const DEFAULT_LIVES := 3
+const SAVE_PATH := "user://save.json"
 
 const MODE_SCALING: Dictionary = {
 	PlayMode.NORMAL: {"hp": 1.0, "damage": 1.0, "loot_bonus": 0},
@@ -50,6 +51,7 @@ func _ready() -> void:
 			"node": null,
 			"active": false,
 		})
+	load_game()
 
 
 func register_player(player_index: int, device_id: int) -> void:
@@ -137,6 +139,7 @@ func unlock_next_mode() -> void:
 		PlayMode.DISCO_FEVER:
 			if PlayMode.SATURDAY_NIGHT_SLAUGHTER not in unlocked_modes:
 				unlocked_modes.append(PlayMode.SATURDAY_NIGHT_SLAUGHTER)
+	save_game()
 
 
 func cycle_play_mode(direction: int) -> void:
@@ -154,6 +157,33 @@ func get_next_level() -> String:
 	if idx >= 0 and idx < LEVEL_ORDER.size() - 1:
 		return LEVEL_ORDER[idx + 1]
 	return ""
+
+
+func save_game() -> void:
+	var data := {
+		"unlocked_modes": unlocked_modes,
+		"play_mode": play_mode as int,
+	}
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data))
+
+
+func load_game() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if not file:
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		var data: Dictionary = parsed
+		if data.has("unlocked_modes"):
+			unlocked_modes.clear()
+			for m in data["unlocked_modes"]:
+				unlocked_modes.append(int(m))
+		if data.has("play_mode"):
+			play_mode = int(data["play_mode"]) as PlayMode
 
 
 func reset_game() -> void:

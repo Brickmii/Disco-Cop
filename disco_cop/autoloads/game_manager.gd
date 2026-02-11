@@ -21,7 +21,7 @@ const MODE_NAMES: Dictionary = {
 }
 
 const LEVEL_ORDER: Array[String] = [
-	"tutorial", "level_01", "level_02", "level_03",
+	"tutorial", "level_01", "level_02", "level_03", "level_04",
 ]
 
 const LEVEL_SCENES: Dictionary = {
@@ -29,6 +29,7 @@ const LEVEL_SCENES: Dictionary = {
 	"level_01": "res://scenes/levels/level_01.tscn",
 	"level_02": "res://scenes/levels/level_02.tscn",
 	"level_03": "res://scenes/levels/level_03.tscn",
+	"level_04": "res://scenes/levels/level_04.tscn",
 }
 
 var current_state: GameState = GameState.MENU

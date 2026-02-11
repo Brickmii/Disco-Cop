@@ -1,11 +1,14 @@
 extends LevelBase
-## Level 03: Led Zeppelin Concert. Concert stage with roadies, groupies, pyro techs, and speakers.
+## Level 03: Sex Pistols Concert. Concert stage with roadies, groupies, pyro techs, and speakers.
 
 var _roadie_scene: PackedScene = preload("res://scenes/enemies/roadie.tscn")
 var _groupie_scene: PackedScene = preload("res://scenes/enemies/groupie.tscn")
 var _pyrotech_scene: PackedScene = preload("res://scenes/enemies/pyro_tech.tscn")
 var _speaker_scene: PackedScene = preload("res://scenes/enemies/speaker_stack.tscn")
-var _boss_scene: PackedScene = preload("res://scenes/bosses/boss_jimmy_page.tscn")
+var _boss_johnny_scene: PackedScene = preload("res://scenes/bosses/boss_johnny_rotten.tscn")
+var _boss_sid_scene: PackedScene = preload("res://scenes/bosses/boss_sid_vicious.tscn")
+
+var _bosses_defeated := 0
 
 
 func _ready() -> void:
@@ -13,22 +16,30 @@ func _ready() -> void:
 	spawn_points = [Vector2(200, 688), Vector2(260, 688), Vector2(320, 688), Vector2(380, 688)]
 
 	_build_scroll_lock_zones()
-	_spawn_boss()
+	_spawn_bosses()
 
 	super._ready()
 	GameManager.current_level = "level_03"
 
 
-func _spawn_boss() -> void:
-	var boss_node: Node2D = _boss_scene.instantiate() as Node2D
-	boss_node.position = Vector2(5700, 688)
-	if boss_node.has_signal("boss_defeated"):
-		boss_node.connect("boss_defeated", _on_boss_victory)
-	add_child(boss_node)
+func _spawn_bosses() -> void:
+	var johnny: Node2D = _boss_johnny_scene.instantiate() as Node2D
+	johnny.position = Vector2(5600, 688)
+	if johnny.has_signal("boss_defeated"):
+		johnny.connect("boss_defeated", _on_boss_defeated)
+	add_child(johnny)
+
+	var sid: Node2D = _boss_sid_scene.instantiate() as Node2D
+	sid.position = Vector2(5800, 688)
+	if sid.has_signal("boss_defeated"):
+		sid.connect("boss_defeated", _on_boss_defeated)
+	add_child(sid)
 
 
-func _on_boss_victory() -> void:
-	EventBus.level_completed.emit()
+func _on_boss_defeated() -> void:
+	_bosses_defeated += 1
+	if _bosses_defeated >= 2:
+		EventBus.level_completed.emit()
 
 
 func _build_scroll_lock_zones() -> void:

@@ -1,5 +1,5 @@
 extends BossBase
-## Jimmy Page — Led Zeppelin Concert boss. 3 phases, 5 attack patterns.
+## Johnny Rotten — Sex Pistols Concert boss. 3 phases, 5 attack patterns.
 
 enum AttackPattern { IDLE, SWEEP, FEEDBACK, PYRO, CHORD, SOLO }
 
@@ -24,13 +24,13 @@ var _projectile_scene: PackedScene
 
 
 func _ready() -> void:
-	boss_name = "Jimmy Page"
-	max_health = 800.0
+	boss_name = "Johnny Rotten"
+	max_health = 500.0
 	phase_thresholds = [0.66, 0.33]
 	super._ready()
 	_projectile_scene = preload("res://scenes/weapons/projectile.tscn")
-	if ObjectPool.get_pool_size("jimmy_page_projectiles") == 0:
-		ObjectPool.preload_pool("jimmy_page_projectiles", _projectile_scene, 50)
+	if ObjectPool.get_pool_size("johnny_rotten_projectiles") == 0:
+		ObjectPool.preload_pool("johnny_rotten_projectiles", _projectile_scene, 50)
 
 
 func _update_boss(delta: float) -> void:
@@ -181,7 +181,7 @@ func _attack_solo(delta: float) -> void:
 
 
 func _fire_projectile(pos: Vector2, dir: Vector2, dmg: float, spd: float = 400.0, elem: WeaponData.Element = WeaponData.Element.NONE) -> void:
-	var proj: Node2D = ObjectPool.get_instance("jimmy_page_projectiles") as Node2D
+	var proj: Node2D = ObjectPool.get_instance("johnny_rotten_projectiles") as Node2D
 	if proj == null:
 		return
 

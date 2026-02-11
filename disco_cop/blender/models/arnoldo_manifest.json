@@ -1,0 +1,62 @@
+[
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_idle",
+        "frames": 4,
+        "width": 48,
+        "height": 80,
+        "action": "idle",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    },
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_flex",
+        "frames": 6,
+        "width": 48,
+        "height": 80,
+        "action": "flex",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    },
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_throw",
+        "frames": 6,
+        "width": 48,
+        "height": 80,
+        "action": "throw",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    },
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_sweep",
+        "frames": 8,
+        "width": 48,
+        "height": 80,
+        "action": "sweep",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    },
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_hurt",
+        "frames": 2,
+        "width": 48,
+        "height": 80,
+        "action": "hurt",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    },
+    {
+        "output": "C:/Users/Ian/Disco Cop/disco_cop/assets/sprites/bosses/",
+        "name": "arnoldo_death",
+        "frames": 8,
+        "width": 48,
+        "height": 80,
+        "action": "death",
+        "start_frame": 1,
+        "ortho_scale": 2.0
+    }
+]

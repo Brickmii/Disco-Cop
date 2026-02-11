@@ -14,7 +14,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _on_start_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/lobby.tscn")
+	Transition.change_scene("res://scenes/ui/lobby.tscn")
 
 
 func _on_quit_pressed() -> void:

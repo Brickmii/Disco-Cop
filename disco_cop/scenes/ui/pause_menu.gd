@@ -6,8 +6,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
+func _process(_delta: float) -> void:
+	# Poll Input — _input() doesn't fire while tree is paused
+	if Input.is_action_just_pressed("pause"):
 		toggle_pause()
 
 
@@ -26,6 +27,5 @@ func _on_resume_pressed() -> void:
 
 
 func _on_quit_pressed() -> void:
-	get_tree().paused = false
 	GameManager.reset_game()
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	Transition.change_scene("res://scenes/ui/main_menu.tscn")

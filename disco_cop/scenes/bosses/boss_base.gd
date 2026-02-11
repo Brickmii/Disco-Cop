@@ -20,6 +20,8 @@ const GRAVITY := 980.0
 
 
 func _ready() -> void:
+	var scale: Dictionary = GameManager.get_difficulty_scale()
+	max_health *= scale["hp"]
 	current_health = max_health
 	collision_layer = 4  # Enemies (bit 3)
 	collision_mask = 1   # World

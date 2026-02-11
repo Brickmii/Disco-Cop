@@ -2,12 +2,40 @@ extends Node
 ## Manages game state, player registry, lives, and scene transitions.
 
 enum GameState { MENU, LOBBY, PLAYING, PAUSED, GAME_OVER, VICTORY }
+enum PlayMode { NORMAL, DISCO_FEVER, SATURDAY_NIGHT_SLAUGHTER }
 
 const MAX_PLAYERS := 4
 const DEFAULT_LIVES := 3
 
+const MODE_SCALING: Dictionary = {
+	PlayMode.NORMAL: {"hp": 1.0, "damage": 1.0, "loot_bonus": 0},
+	PlayMode.DISCO_FEVER: {"hp": 1.5, "damage": 1.4, "loot_bonus": 1},
+	PlayMode.SATURDAY_NIGHT_SLAUGHTER: {"hp": 2.0, "damage": 1.8, "loot_bonus": 2},
+}
+
+const MODE_NAMES: Dictionary = {
+	PlayMode.NORMAL: "Normal",
+	PlayMode.DISCO_FEVER: "Disco Fever",
+	PlayMode.SATURDAY_NIGHT_SLAUGHTER: "Saturday Night Slaughter",
+}
+
+const LEVEL_ORDER: Array[String] = [
+	"tutorial", "level_01", "level_02", "level_03", "level_04", "level_05",
+]
+
+const LEVEL_SCENES: Dictionary = {
+	"tutorial": "res://scenes/levels/test_level.tscn",
+	"level_01": "res://scenes/levels/level_01.tscn",
+	"level_02": "res://scenes/levels/level_02.tscn",
+	"level_03": "res://scenes/levels/level_03.tscn",
+	"level_04": "res://scenes/levels/level_04.tscn",
+	"level_05": "res://scenes/levels/level_05.tscn",
+}
+
 var current_state: GameState = GameState.MENU
 var current_level: String = ""
+var play_mode: PlayMode = PlayMode.NORMAL
+var unlocked_modes: Array[int] = [PlayMode.NORMAL]  # Array[int] for Variant compat
 var player_data: Array[Dictionary] = []  # [{index, device_id, lives, node, active}]
 var player_scenes: Array[Node] = []
 var player_weapons: Dictionary = {}  # {player_index: Array[WeaponData]}
@@ -96,6 +124,38 @@ func get_player_weapons(player_index: int) -> Array[WeaponData]:
 	if player_weapons.has(player_index):
 		return player_weapons[player_index]
 	return [] as Array[WeaponData]
+
+
+func get_difficulty_scale() -> Dictionary:
+	return MODE_SCALING[play_mode]
+
+
+func unlock_next_mode() -> void:
+	## Unlock the next play mode after beating the game.
+	match play_mode:
+		PlayMode.NORMAL:
+			if PlayMode.DISCO_FEVER not in unlocked_modes:
+				unlocked_modes.append(PlayMode.DISCO_FEVER)
+		PlayMode.DISCO_FEVER:
+			if PlayMode.SATURDAY_NIGHT_SLAUGHTER not in unlocked_modes:
+				unlocked_modes.append(PlayMode.SATURDAY_NIGHT_SLAUGHTER)
+
+
+func cycle_play_mode(direction: int) -> void:
+	## Cycle through unlocked modes. direction: +1 or -1.
+	var idx := unlocked_modes.find(play_mode as int)
+	idx = (idx + direction) % unlocked_modes.size()
+	if idx < 0:
+		idx += unlocked_modes.size()
+	play_mode = unlocked_modes[idx] as PlayMode
+
+
+func get_next_level() -> String:
+	## Returns the next level key, or "" if game is complete.
+	var idx := LEVEL_ORDER.find(current_level)
+	if idx >= 0 and idx < LEVEL_ORDER.size() - 1:
+		return LEVEL_ORDER[idx + 1]
+	return ""
 
 
 func reset_game() -> void:

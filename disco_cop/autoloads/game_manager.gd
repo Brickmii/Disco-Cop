@@ -36,6 +36,7 @@ var unlocked_modes: Array[int] = [PlayMode.NORMAL]  # Array[int] for Variant com
 var player_data: Array[Dictionary] = []  # [{index, device_id, lives, node, active}]
 var player_scenes: Array[Node] = []
 var player_weapons: Dictionary = {}  # {player_index: Array[WeaponData]}
+var run_stats: Dictionary = {"enemies_killed": 0, "bosses_defeated": 0, "loot_collected": 0}
 
 var _player_scene: PackedScene = null
 
@@ -160,5 +161,6 @@ func reset_game() -> void:
 		pd["lives"] = DEFAULT_LIVES
 		pd["node"] = null
 	player_weapons.clear()
+	run_stats = {"enemies_killed": 0, "bosses_defeated": 0, "loot_collected": 0}
 	current_level = ""
 	current_state = GameState.MENU

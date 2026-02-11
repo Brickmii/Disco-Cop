@@ -27,6 +27,7 @@ func _ready() -> void:
 
 	EventBus.enemy_died.connect(_on_enemy_died)
 	EventBus.boss_defeated.connect(_on_boss_defeated)
+	EventBus.loot_picked_up.connect(_on_loot_picked_up)
 	EventBus.level_started.emit()
 	GameManager.change_state(GameManager.GameState.PLAYING)
 
@@ -54,6 +55,7 @@ func _spawn_players() -> void:
 
 
 func _on_enemy_died(enemy_node: Node, pos: Vector2) -> void:
+	GameManager.run_stats["enemies_killed"] += 1
 	# Spawn loot from enemy
 	if enemy_node is BaseEnemy and enemy_node.enemy_data:
 		var drop := LootTable.roll_drop(enemy_node.enemy_data.loot_chance)
@@ -72,7 +74,12 @@ func _spawn_loot_at(pos: Vector2, drop_data: Dictionary = {}) -> void:
 	call_deferred("add_child", loot)
 
 
+func _on_loot_picked_up(_player_index: int, _item: Resource) -> void:
+	GameManager.run_stats["loot_collected"] += 1
+
+
 func _on_boss_defeated(boss_node: Node) -> void:
+	GameManager.run_stats["bosses_defeated"] += 1
 	var drops: Array = LootTable.roll_boss_drop()
 	for drop in drops:
 		var offset := Vector2(randf_range(-40, 40), 0)

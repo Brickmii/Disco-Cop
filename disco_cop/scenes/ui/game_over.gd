@@ -74,9 +74,8 @@ func _on_continue_pressed() -> void:
 		if next_level != "":
 			Transition.change_scene(GameManager.LEVEL_SCENES[next_level])
 		else:
-			# Beat the game — go to menu for now (credits screen in later phase)
-			GameManager.reset_game()
-			Transition.change_scene("res://scenes/ui/main_menu.tscn")
+			# Beat the game — show credits
+			Transition.change_scene("res://scenes/ui/credits.tscn")
 	else:
 		GameManager.reset_game()
 		Transition.change_scene("res://scenes/ui/main_menu.tscn")

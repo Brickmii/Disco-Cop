@@ -155,7 +155,7 @@ func _attack_wall_of_sound(_delta: float) -> void:
 	# 5 horizontal wave projectiles toward player
 	velocity.x = 0.0
 	if _pattern_timer < 0.1 and _target:
-		var base_dir := sign(_target.global_position.x - global_position.x)
+		var base_dir: float = sign(_target.global_position.x - global_position.x)
 		for i in 5:
 			var y_offset := -60.0 + (i * 15.0)
 			var dir := Vector2(base_dir, 0.0).normalized()

@@ -26,17 +26,17 @@ func _spawn_bosses() -> void:
 	var johnny: Node2D = _boss_johnny_scene.instantiate() as Node2D
 	johnny.position = Vector2(5600, 688)
 	if johnny.has_signal("boss_defeated"):
-		johnny.connect("boss_defeated", _on_boss_defeated)
+		johnny.connect("boss_defeated", _on_dual_boss_killed)
 	add_child(johnny)
 
 	var sid: Node2D = _boss_sid_scene.instantiate() as Node2D
 	sid.position = Vector2(5800, 688)
 	if sid.has_signal("boss_defeated"):
-		sid.connect("boss_defeated", _on_boss_defeated)
+		sid.connect("boss_defeated", _on_dual_boss_killed)
 	add_child(sid)
 
 
-func _on_boss_defeated() -> void:
+func _on_dual_boss_killed() -> void:
 	_bosses_defeated += 1
 	if _bosses_defeated >= 2:
 		EventBus.level_completed.emit()

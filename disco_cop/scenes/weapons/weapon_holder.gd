@@ -33,7 +33,7 @@ func _ready() -> void:
 
 	# Pre-fill pool
 	if ObjectPool.get_pool_size(PROJECTILE_POOL_NAME) == 0:
-		ObjectPool.preload_pool(PROJECTILE_POOL_NAME, _projectile_scene, 30)
+		ObjectPool.preload_pool(PROJECTILE_POOL_NAME, _projectile_scene, 60)
 
 	# Give a starter weapon
 	var starter := WeaponGenerator.generate(1, Rarity.Tier.COMMON, WeaponData.WeaponType.PISTOL)

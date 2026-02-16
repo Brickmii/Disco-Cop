@@ -145,6 +145,9 @@ func _emit_hit() -> void:
 
 
 func _deactivate() -> void:
+	if not visible:
+		return  # Already deactivating — prevent double-hit overhead
+	visible = false
 	set_deferred("monitoring", false)
 	set_deferred("monitorable", false)
 	call_deferred("_do_pool_release")

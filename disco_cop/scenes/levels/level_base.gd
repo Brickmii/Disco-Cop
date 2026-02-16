@@ -12,11 +12,17 @@ var _pause_menu_scene: PackedScene = preload("res://scenes/ui/pause_menu.tscn")
 var _game_over_scene: PackedScene = preload("res://scenes/ui/game_over.tscn")
 var _camera: MultiTargetCamera = null
 
+const LOOT_POOL_NAME := "loot_drops"
+
 
 func _ready() -> void:
 	_camera = $MultiTargetCamera as MultiTargetCamera
 	if _camera:
 		_camera.level_bounds = level_bounds
+
+	# Pre-pool loot drops to avoid allocation hitches on Pi
+	if ObjectPool.get_pool_size(LOOT_POOL_NAME) == 0:
+		ObjectPool.preload_pool(LOOT_POOL_NAME, _loot_drop_scene, 10)
 
 	# Add UI layers
 	add_child(_game_hud_scene.instantiate())
@@ -70,9 +76,9 @@ func _spawn_loot_at(pos: Vector2, drop_data: Dictionary = {}) -> void:
 	if drop_data.is_empty():
 		return
 
-	var loot: Node = _loot_drop_scene.instantiate()
-	loot.call("setup", drop_data, pos)
-	call_deferred("add_child", loot)
+	var loot: LootDrop = ObjectPool.get_instance(LOOT_POOL_NAME) as LootDrop
+	if loot:
+		loot.activate(drop_data, pos)
 
 
 func _on_loot_picked_up(_player_index: int, _item: Resource) -> void:

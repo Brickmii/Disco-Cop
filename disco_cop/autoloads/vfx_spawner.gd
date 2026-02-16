@@ -8,7 +8,7 @@ var _vfx_scene: PackedScene = null
 
 func _ready() -> void:
 	_vfx_scene = preload("res://scenes/effects/vfx.tscn")
-	ObjectPool.preload_pool(VFX_POOL_NAME, _vfx_scene, 10)
+	ObjectPool.preload_pool(VFX_POOL_NAME, _vfx_scene, 30)
 
 	EventBus.shield_broken.connect(_on_shield_broken)
 	EventBus.enemy_died.connect(_on_enemy_died)

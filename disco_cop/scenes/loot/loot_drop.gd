@@ -1,6 +1,8 @@
 extends Area2D
 class_name LootDrop
-## A dropped item that players can pick up.
+## A dropped item that players can pick up. Supports object pooling.
+
+const POOL_NAME := "loot_drops"
 
 var drop_data: Dictionary = {}  # {type: LootTable.DropType, data: Resource}
 var _bob_offset := 0.0
@@ -26,18 +28,31 @@ func _ready() -> void:
 	collision_layer = 6  # Loot
 	collision_mask = 2   # Players
 	body_entered.connect(_on_body_entered)
-	_initial_y = position.y
+
+
+func activate(data: Dictionary, pos: Vector2) -> void:
+	drop_data = data
+	global_position = pos
+	_bob_offset = 0.0
+	_initial_y = pos.y
+	modulate = Color.WHITE
+	visible = true
+	process_mode = Node.PROCESS_MODE_INHERIT
+	set_deferred("monitoring", true)
+	set_deferred("monitorable", true)
+
 	_update_visual()
 
 	# Pop-up effect
 	var tween := create_tween()
-	tween.tween_property(self, "position", position + Vector2(randf_range(-30, 30), -40), 0.3)
-	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(self, "position", pos + Vector2(randf_range(-30, 30), -40), 0.3)
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_callback(func() -> void: _initial_y = position.y)
 
 
 func setup(data: Dictionary, pos: Vector2) -> void:
-	drop_data = data
-	global_position = pos
+	# Legacy compat — redirect to activate
+	activate(data, pos)
 
 
 func _process(delta: float) -> void:
@@ -96,7 +111,18 @@ func _on_body_entered(body: Node2D) -> void:
 
 	_apply_pickup(body, player_index)
 	EventBus.loot_picked_up.emit(player_index, drop_data.get("data"))
-	queue_free()
+	_deactivate()
+
+
+func _deactivate() -> void:
+	visible = false
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
+	call_deferred("_do_pool_release")
+
+
+func _do_pool_release() -> void:
+	ObjectPool.release_instance(self)
 
 
 func _apply_pickup(player: Node2D, player_index: int) -> void:

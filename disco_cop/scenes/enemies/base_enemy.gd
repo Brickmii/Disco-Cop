@@ -177,6 +177,12 @@ func take_damage(amount: float, _source_position: Vector2 = Vector2.ZERO) -> voi
 func _on_died() -> void:
 	_change_state(State.DEAD)
 	velocity = Vector2.ZERO
+	set_physics_process(false)
+
+	# Kill any active tweens (hit flash) to avoid concurrent tween overhead
+	if sprite:
+		sprite.modulate = Color.WHITE
+	modulate = Color.WHITE
 
 	EventBus.enemy_died.emit(self, global_position)
 

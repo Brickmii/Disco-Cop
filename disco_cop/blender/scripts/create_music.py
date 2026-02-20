@@ -537,6 +537,949 @@ def create_boss_theme():
     return mix, "boss_theme"
 
 
+# ── Additional Instruments (punk/rock/new-wave) ──────────────────────
+
+def power_chord(freq, dur, gain=0.22):
+    """Distorted power chord — root + fifth, squared for crunch."""
+    sig = saw(freq, dur) * 0.4
+    sig += saw(freq * 1.5, dur) * 0.3  # Fifth
+    sig += saw(freq * 2, dur) * 0.15   # Octave
+    # Distortion: hard clip
+    sig = np.clip(sig * 3, -1, 1) * gain
+    for _ in range(2):
+        sig = np.convolve(sig, [0.3, 0.4, 0.3], mode='same')
+    return sig * env_ar(len(sig), 0.003, 0.02)
+
+
+def punk_bass(freq, dur, decay=0.1):
+    """Aggressive punk bass — square wave with bite."""
+    sig = square(freq, dur, 0.4) * 0.4
+    sig += saw(freq, dur) * 0.2
+    return sig * env_decay(len(sig), decay)
+
+
+def crash_cymbal(dur=0.4):
+    """Crash cymbal for punk fills."""
+    nn = int(RATE * dur)
+    sig = noise(dur) * 0.25
+    # Add some metallic ring
+    sig += sine(3200, dur) * 0.03 + sine(5100, dur) * 0.02
+    return sig * env_decay(nn, 0.2)
+
+
+def ride_bell(dur=0.06):
+    """Ride bell ping."""
+    nn = int(RATE * dur)
+    sig = sine(4800, dur) * 0.12 + sine(7200, dur) * 0.05
+    return sig * env_decay(nn, 0.03)
+
+
+def tom(freq=120, dur=0.15):
+    """Floor/rack tom."""
+    nn = int(RATE * dur)
+    t = np.linspace(0, dur, nn, False)
+    f = freq * 1.5 * np.exp(-t / 0.05) + freq
+    sig = np.sin(2 * np.pi * np.cumsum(f) / RATE) * 0.4
+    return sig * env_decay(nn, 0.06)
+
+
+def brass_stab(freqs, dur=0.1):
+    """Brass section stab for disco/funk accents."""
+    sig = np.zeros(int(RATE * dur))
+    for f in freqs:
+        sig += square(f, dur, 0.45) * 0.08
+        sig += sine(f, dur) * 0.06
+    for _ in range(3):
+        sig = np.convolve(sig, [0.25, 0.5, 0.25], mode='same')
+    return sig * env_ar(len(sig), 0.005, 0.015)
+
+
+def falsetto_lead(freq, dur):
+    """Falsetto-style lead — bright sine + octave shimmer (Bee Gees)."""
+    sig = sine(freq, dur) * 0.2
+    sig += sine(freq * 2, dur) * 0.12
+    sig += sine(freq * 3, dur) * 0.04  # Extra brightness
+    # Vibrato
+    t = np.linspace(0, dur, len(sig), False)
+    vib = np.sin(2 * np.pi * 5.5 * t) * 0.008
+    sig2 = sine(freq * (1 + vib.mean()), dur) * 0.05
+    mix_buf = sig + sig2[:len(sig)]
+    return mix_buf * env_ar(len(mix_buf), 0.01, 0.04)
+
+
+def synth_arp(freq, dur):
+    """Arpeggiated synth note for new-wave shimmer."""
+    sig = square(freq, dur, 0.3) * 0.12
+    sig += sine(freq * 2, dur) * 0.08
+    sig += sine(freq * 4, dur) * 0.03
+    return sig * env_ar(len(sig), 0.002, 0.02)
+
+
+# ── Additional Drum Patterns ─────────────────────────────────────────
+
+def punk_drums(mix, bpm, total_bars, intensity=1):
+    """Punk drum pattern — fast, aggressive, snare-heavy."""
+    beat = bts(1, bpm)
+    bar = beat * 4
+    sixteenth = beat // 4
+
+    for b in range(total_bars):
+        for i in range(4):
+            pos = b * bar + i * beat
+            # Kick on 1 and 3
+            if i in [0, 2]:
+                mix_at(mix, kick(0.12), pos)
+            # Snare on 2 and 4
+            if i in [1, 3]:
+                mix_at(mix, snare(0.1), pos)
+            # Hi-hat 8ths
+            mix_at(mix, hihat_closed(0.03) * 1.2, pos)
+            mix_at(mix, hihat_closed(0.03) * 0.7, pos + beat // 2)
+
+        # Crash on bar 1 of every 4
+        if b % 4 == 0:
+            mix_at(mix, crash_cymbal(), b * bar)
+
+        # Extra kick patterns for intensity
+        if intensity >= 2:
+            pos = b * bar
+            mix_at(mix, kick(0.1), pos + beat + beat // 2)  # & of 2
+            mix_at(mix, kick(0.1), pos + beat * 3 + beat // 2)  # & of 4
+        # Fill every 4 bars
+        if intensity >= 1 and b % 4 == 3:
+            for s in range(4):
+                mix_at(mix, snare(0.06) * 0.6, b * bar + beat * 3 + s * sixteenth)
+
+
+def new_wave_drums(mix, bpm, total_bars):
+    """New wave drum pattern — tight, driving, with ride bell."""
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+
+    for b in range(total_bars):
+        for i in range(4):
+            pos = b * bar + i * beat
+            # Kick on 1, &2, 3
+            if i in [0, 2]:
+                mix_at(mix, kick(0.13), pos)
+            if i == 1:
+                mix_at(mix, kick(0.1), pos + eighth)
+            # Snare on 2 and 4
+            if i in [1, 3]:
+                mix_at(mix, snare(0.1), pos)
+            # Ride 8ths with off-beat accent
+            mix_at(mix, ride_bell() * 0.7, pos)
+            mix_at(mix, ride_bell(), pos + eighth)
+            # Ghost hi-hat
+            mix_at(mix, hihat_closed(0.03) * 0.4, pos + beat // 4)
+
+        if b % 4 == 3:
+            # Tom fill
+            for s in range(3):
+                mix_at(mix, tom(140 - s * 20, 0.1), b * bar + beat * 3 + s * (beat // 3))
+
+
+def bee_gees_drums(mix, bpm, total_bars):
+    """Tight Bee Gees disco drums — emphasis on off-beat hi-hat and groove."""
+    beat = bts(1, bpm)
+    bar = beat * 4
+    sixteenth = beat // 4
+
+    for b in range(total_bars):
+        for i in range(4):
+            pos = b * bar + i * beat
+            # Four-on-the-floor kick
+            mix_at(mix, kick(0.14), pos)
+            # Snare on 2 and 4 with extra body
+            if i in [1, 3]:
+                mix_at(mix, snare(0.13), pos)
+            # Strong open hat on off-beats — the Bee Gees signature
+            mix_at(mix, hihat_open(0.14) * 1.1, pos + beat // 2)
+            # Tight closed hats on 16ths
+            for s in range(4):
+                if s == 2:
+                    continue
+                vol = 0.9 if s == 0 else 0.5
+                mix_at(mix, hihat_closed(0.035) * vol, pos + s * sixteenth)
+        # Syncopated ghost snares for Gibb groove
+        if b % 2 == 1:
+            mix_at(mix, snare(0.05) * 0.3, b * bar + beat * 2 + 3 * sixteenth)
+
+
+# ── LEVEL 1: SKATING RINK ──────────────────────────────────────────────
+
+def create_level_01_theme():
+    """Roller rink disco funk — 124 BPM, 8 bars.
+    Think: classic roller disco, funky and groovy.
+    Progression: Gm7 - C9 - Fm7 - Bb7 (2 bars each)
+    """
+    bpm = 124
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    disco_drums(mix, bpm, total_bars, variation=1)
+
+    # Bass: bouncy roller rink groove
+    bass_prog = [('G2', 'G3'), ('C2', 'C3'), ('F2', 'F3'), ('A#2', 'A#3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(4):
+                bp = pos + i * beat
+                mix_at(mix, disco_bass(n(lo), 0.15, 0.1), bp)
+                mix_at(mix, disco_bass(n(hi), 0.1, 0.07), bp + eighth)
+                # Extra syncopation on 'a'
+                if i % 2 == 1:
+                    mix_at(mix, disco_bass(n(lo), 0.06, 0.04), bp + 3 * sixteenth)
+
+    # Guitar: funky wah stabs
+    gtr = [
+        [n('G3'), n('A#3'), n('D4'), n('F4')],   # Gm7
+        [n('C3'), n('E4'), n('G4'), n('A#4')],   # C9
+        [n('F3'), n('G#3'), n('C4'), n('D#4')],  # Fm7
+        [n('A#3'), n('D4'), n('F4'), n('G#4')],  # Bb7
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.07), pos + eighth)
+                mix_at(mix, guitar_mute(chord), pos + 3 * sixteenth)
+
+    # Strings: warm pads
+    strs = [
+        [n('G3'), n('A#3'), n('D4'), n('F4')],
+        [n('C4'), n('E4'), n('G4'), n('A#4')],
+        [n('F3'), n('G#3'), n('C4'), n('D#4')],
+        [n('A#3'), n('D4'), n('F4'), n('G#4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur), ci * 2 * bar)
+
+    # Lead: cheerful roller rink melody
+    melody = [
+        (0, 0, 'D5', 0.5), (0, 0.5, 'F5', 0.5), (0, 1, 'G5', 1),
+        (0, 2, 'F5', 0.5), (0, 2.5, 'D5', 0.5), (0, 3, 'A#4', 1),
+        (1, 0, 'C5', 0.5), (1, 0.5, 'D5', 0.5), (1, 1, 'F5', 1),
+        (1, 2, 'D5', 1.5), (1, 3.5, 'C5', 0.5),
+        (2, 0, 'G4', 0.5), (2, 0.5, 'A#4', 0.5), (2, 1, 'C5', 0.5),
+        (2, 1.5, 'D5', 0.5), (2, 2, 'F5', 1), (2, 3, 'D5', 1),
+        (3, 0, 'A#4', 1.5), (3, 1.5, 'C5', 0.5), (3, 2, 'D5', 2),
+        (4, 0, 'F5', 0.5), (4, 0.5, 'G5', 0.5), (4, 1, 'A#5', 1),
+        (4, 2, 'G5', 0.5), (4, 2.5, 'F5', 0.5), (4, 3, 'D5', 1),
+        (5, 0, 'C5', 1), (5, 1, 'D5', 0.5), (5, 1.5, 'F5', 0.5),
+        (5, 2, 'G5', 2),
+        (6, 0, 'A#5', 0.5), (6, 0.5, 'G5', 0.5), (6, 1, 'F5', 0.5),
+        (6, 1.5, 'D5', 0.5), (6, 2, 'C5', 1), (6, 3, 'D5', 1),
+        (7, 0, 'G4', 2), (7, 2, 'A#4', 1), (7, 3, 'D5', 1),
+    ]
+    for m_bar, beat_off, note_name, dur_beats in melody:
+        pos = m_bar * bar + int(beat_off * beat)
+        dur = 60.0 / bpm * dur_beats * 0.85
+        mix_at(mix, lead_synth(n(note_name), dur), pos)
+
+    return mix, "level_01_theme"
+
+
+def create_level_01_boss():
+    """Disco King boss — dark roller rink showdown, 130 BPM, 8 bars.
+    Progression: Gm - Eb - Cm - D7
+    """
+    bpm = 130
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    disco_drums(mix, bpm, total_bars, variation=2)
+
+    bass_prog = [('G2', 'G3'), ('D#2', 'D#3'), ('C2', 'C3'), ('D2', 'D3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(8):
+                f = n(lo) if i % 2 == 0 else n(hi)
+                mix_at(mix, disco_bass(f, 0.12, 0.08), pos + i * eighth)
+
+    gtr = [
+        [n('G3'), n('A#3'), n('D4')],
+        [n('D#3'), n('G3'), n('A#3')],
+        [n('C3'), n('D#3'), n('G3')],
+        [n('D3'), n('F#3'), n('A3'), n('C4')],
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.09) * 1.2, pos + eighth)
+
+    strs = [
+        [n('G3'), n('A#3'), n('D4')],
+        [n('D#3'), n('G3'), n('A#3')],
+        [n('C3'), n('D#4'), n('G4')],
+        [n('D3'), n('F#3'), n('A3')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 1.1, ci * 2 * bar)
+
+    # Menacing lead
+    patterns = [
+        [(0, 'G5', 0.5), (0.5, 'F5', 0.5), (1, 'D#5', 0.5), (1.5, 'D5', 0.5),
+         (2, 'A#4', 1), (3, 'D5', 0.5), (3.5, 'D#5', 0.5)],
+        [(0, 'G4', 0.5), (0.5, 'A#4', 0.5), (1, 'D#5', 1),
+         (2, 'D5', 0.5), (2.5, 'A#4', 0.5), (3, 'G4', 1)],
+        [(0, 'C5', 0.75), (0.75, 'D5', 0.25), (1, 'D#5', 1),
+         (2, 'G5', 0.5), (2.5, 'F5', 0.5), (3, 'D#5', 1)],
+        [(0, 'D5', 0.5), (0.5, 'F#5', 0.5), (1, 'A5', 1),
+         (2, 'F#5', 0.5), (2.5, 'D5', 0.5), (3, 'A4', 1)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
+                pos = b * bar + int(beat_off * beat)
+                dur = 60.0 / bpm * dur_beats * 0.8
+                mix_at(mix, lead_synth(n(note_name), dur) * 1.2, pos)
+
+    return mix, "level_01_boss"
+
+
+# ── LEVEL 2: VENICE BEACH ──────────────────────────────────────────────
+
+def create_level_02_theme():
+    """Venice Beach bombastic 80s action — 128 BPM, 8 bars.
+    Arnold Schwarzenegger vibe: larger-than-life, driving.
+    Progression: Cm - Ab - Fm - G7 (2 bars each)
+    """
+    bpm = 128
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    disco_drums(mix, bpm, total_bars, variation=2)
+
+    # Heavy bass: pumping 80s action
+    bass_prog = [('C2', 'C3'), ('G#2', 'G#3'), ('F2', 'F3'), ('G2', 'G3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(4):
+                bp = pos + i * beat
+                mix_at(mix, disco_bass(n(lo), 0.18, 0.12), bp)
+                mix_at(mix, disco_bass(n(hi), 0.1, 0.06), bp + eighth)
+
+    # Guitar: power stabs (more aggressive)
+    gtr = [
+        [n('C3'), n('D#3'), n('G3'), n('C4')],
+        [n('G#3'), n('C4'), n('D#4')],
+        [n('F3'), n('G#3'), n('C4')],
+        [n('G3'), n('B3'), n('D4'), n('F4')],
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.09) * 1.1, pos + eighth)
+                mix_at(mix, guitar_stab(chord, 0.06) * 0.7, pos + 3 * sixteenth)
+
+    # Brass stabs for Arnold bombast
+    brass = [
+        [n('C4'), n('D#4'), n('G4')],
+        [n('G#3'), n('C4'), n('D#4')],
+        [n('F3'), n('G#3'), n('C4')],
+        [n('G3'), n('B3'), n('D4')],
+    ]
+    for ci, chord in enumerate(brass):
+        for rep in range(2):
+            b = ci * 2 + rep
+            # Brass hits on beat 1 and &3
+            mix_at(mix, brass_stab(chord, 0.12), b * bar)
+            mix_at(mix, brass_stab(chord, 0.08), b * bar + beat * 2 + eighth)
+
+    # Strings: dramatic cinematic pads
+    strs = [
+        [n('C4'), n('D#4'), n('G4'), n('C5')],
+        [n('G#3'), n('C4'), n('D#4'), n('G#4')],
+        [n('F3'), n('G#3'), n('C4'), n('F4')],
+        [n('G3'), n('B3'), n('D4'), n('G4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 1.0, ci * 2 * bar)
+
+    # Lead: heroic action melody
+    melody = [
+        (0, 0, 'G5', 0.5), (0, 0.5, 'G5', 0.25), (0, 0.75, 'G5', 0.25),
+        (0, 1, 'D#5', 1), (0, 2, 'F5', 0.5), (0, 2.5, 'G5', 0.5),
+        (0, 3, 'C6', 1),
+        (1, 0, 'G5', 0.5), (1, 0.5, 'F5', 0.5), (1, 1, 'D#5', 1),
+        (1, 2, 'C5', 2),
+        (2, 0, 'G#5', 0.5), (2, 0.5, 'G5', 0.5), (2, 1, 'F5', 1),
+        (2, 2, 'D#5', 0.5), (2, 2.5, 'F5', 0.5), (2, 3, 'G5', 1),
+        (3, 0, 'G#5', 2), (3, 2, 'G5', 2),
+        (4, 0, 'C5', 0.5), (4, 0.5, 'D5', 0.5), (4, 1, 'D#5', 0.5),
+        (4, 1.5, 'F5', 0.5), (4, 2, 'G5', 1.5), (4, 3.5, 'F5', 0.5),
+        (5, 0, 'D#5', 1), (5, 1, 'C5', 1), (5, 2, 'D5', 1), (5, 3, 'D#5', 1),
+        (6, 0, 'F5', 0.5), (6, 0.5, 'G5', 0.5), (6, 1, 'G#5', 1),
+        (6, 2, 'G5', 0.5), (6, 2.5, 'F5', 0.5), (6, 3, 'D#5', 1),
+        (7, 0, 'G5', 2), (7, 2, 'C5', 2),
+    ]
+    for m_bar, beat_off, note_name, dur_beats in melody:
+        pos = m_bar * bar + int(beat_off * beat)
+        dur = 60.0 / bpm * dur_beats * 0.85
+        mix_at(mix, lead_synth(n(note_name), dur) * 1.1, pos)
+
+    return mix, "level_02_theme"
+
+
+def create_level_02_boss():
+    """Arnoldo boss — bombastic muscle beach showdown, 134 BPM.
+    Progression: Cm - G - Ab - Bb
+    """
+    bpm = 134
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    disco_drums(mix, bpm, total_bars, variation=2)
+
+    bass_prog = [('C2', 'C3'), ('G2', 'G3'), ('G#2', 'G#3'), ('A#2', 'A#3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(8):
+                f = n(lo) if i % 2 == 0 else n(hi)
+                mix_at(mix, disco_bass(f, 0.12, 0.08), pos + i * eighth)
+
+    # Heavy brass for Arnold
+    brass = [
+        [n('C4'), n('D#4'), n('G4')],
+        [n('G3'), n('B3'), n('D4')],
+        [n('G#3'), n('C4'), n('D#4')],
+        [n('A#3'), n('D4'), n('F4')],
+    ]
+    for ci, chord in enumerate(brass):
+        for rep in range(2):
+            b = ci * 2 + rep
+            mix_at(mix, brass_stab(chord, 0.15) * 1.3, b * bar)
+            mix_at(mix, brass_stab(chord, 0.1) * 1.0, b * bar + beat * 2)
+            mix_at(mix, brass_stab(chord, 0.08) * 0.8, b * bar + beat * 2 + eighth)
+
+    strs = [
+        [n('C4'), n('D#4'), n('G4')],
+        [n('G3'), n('B3'), n('D4')],
+        [n('G#3'), n('C4'), n('D#4')],
+        [n('A#3'), n('D4'), n('F4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 1.2, ci * 2 * bar)
+
+    # Powerful lead
+    patterns = [
+        [(0, 'C5', 0.5), (0.5, 'D#5', 0.5), (1, 'G5', 1),
+         (2, 'G5', 0.5), (2.5, 'F5', 0.5), (3, 'D#5', 1)],
+        [(0, 'D5', 0.5), (0.5, 'G5', 1), (1.5, 'F5', 0.5),
+         (2, 'D5', 1), (3, 'B4', 1)],
+        [(0, 'G#4', 0.5), (0.5, 'C5', 0.5), (1, 'D#5', 1),
+         (2, 'F5', 0.5), (2.5, 'D#5', 0.5), (3, 'C5', 1)],
+        [(0, 'A#4', 0.5), (0.5, 'D5', 0.5), (1, 'F5', 1),
+         (2, 'D5', 1.5), (3.5, 'C5', 0.5)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
+                pos = b * bar + int(beat_off * beat)
+                dur = 60.0 / bpm * dur_beats * 0.8
+                mix_at(mix, lead_synth(n(note_name), dur) * 1.3, pos)
+
+    return mix, "level_02_boss"
+
+
+# ── LEVEL 3: PUNK CONCERT (SEX PISTOLS) ─────────────────────────────
+
+def create_level_03_theme():
+    """Raw punk aggression — 160 BPM, 8 bars.
+    Sex Pistols: abrasive, anarchic, fast.
+    Progression: E5 - A5 - B5 - E5 (power chords, 2 bars each)
+    """
+    bpm = 160
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    punk_drums(mix, bpm, total_bars, intensity=2)
+
+    # Punk bass: driving root notes
+    bass_notes = [('E2',), ('A2',), ('B2',), ('E2',)]
+    for ci, (root,) in enumerate(bass_notes):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(4):
+                bp = pos + i * beat
+                mix_at(mix, punk_bass(n(root), 0.15, 0.08), bp)
+                mix_at(mix, punk_bass(n(root) * 2, 0.08, 0.04), bp + eighth)
+
+    # Power chords: raw and loud
+    chords = [n('E3'), n('A3'), n('B3'), n('E3')]
+    for ci, root in enumerate(chords):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                # Down-strums on every beat
+                mix_at(mix, power_chord(root, 0.18, 0.25), pos)
+                # Up-strums on off-beats
+                mix_at(mix, power_chord(root, 0.1, 0.15), pos + eighth)
+
+    # Aggressive lead: angular punk melody
+    melody = [
+        (0, 0, 'E5', 0.25), (0, 0.25, 'E5', 0.25), (0, 0.5, 'G5', 0.5),
+        (0, 1, 'A5', 0.5), (0, 1.5, 'G5', 0.5),
+        (0, 2, 'E5', 0.5), (0, 2.5, 'D5', 0.5), (0, 3, 'E5', 1),
+        (1, 0, 'B4', 0.5), (1, 0.5, 'D5', 0.5), (1, 1, 'E5', 0.5),
+        (1, 1.5, 'G5', 0.5), (1, 2, 'E5', 2),
+        (2, 0, 'A5', 0.5), (2, 0.5, 'A5', 0.25), (2, 0.75, 'G5', 0.25),
+        (2, 1, 'E5', 0.5), (2, 1.5, 'D5', 0.5),
+        (2, 2, 'C5', 0.5), (2, 2.5, 'D5', 0.5), (2, 3, 'E5', 1),
+        (3, 0, 'A4', 1), (3, 1, 'B4', 0.5), (3, 1.5, 'D5', 0.5),
+        (3, 2, 'E5', 2),
+        (4, 0, 'B5', 0.5), (4, 0.5, 'A5', 0.5), (4, 1, 'G5', 0.5),
+        (4, 1.5, 'E5', 0.5), (4, 2, 'D5', 1), (4, 3, 'E5', 1),
+        (5, 0, 'B4', 0.5), (5, 0.5, 'E5', 0.5), (5, 1, 'G5', 0.5),
+        (5, 1.5, 'A5', 0.5), (5, 2, 'B5', 2),
+        (6, 0, 'E5', 0.25), (6, 0.25, 'E5', 0.25), (6, 0.5, 'G5', 0.5),
+        (6, 1, 'A5', 0.5), (6, 1.5, 'B5', 0.5),
+        (6, 2, 'A5', 0.5), (6, 2.5, 'G5', 0.5), (6, 3, 'E5', 1),
+        (7, 0, 'E5', 1), (7, 1, 'D5', 0.5), (7, 1.5, 'E5', 0.5),
+        (7, 2, 'E5', 2),
+    ]
+    for m_bar, beat_off, note_name, dur_beats in melody:
+        pos = m_bar * bar + int(beat_off * beat)
+        dur = 60.0 / bpm * dur_beats * 0.8
+        mix_at(mix, lead_synth(n(note_name), dur) * 1.2, pos)
+
+    return mix, "level_03_theme"
+
+
+def create_level_03_boss():
+    """Johnny Rotten + Sid Vicious boss — chaotic punk fury, 170 BPM.
+    Progression: Am - F5 - C5 - G5
+    """
+    bpm = 170
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    punk_drums(mix, bpm, total_bars, intensity=2)
+    # Extra crash chaos
+    for b in range(total_bars):
+        if b % 2 == 0:
+            mix_at(mix, crash_cymbal(0.3), b * bar)
+
+    bass_notes = [('A2',), ('F2',), ('C2',), ('G2',)]
+    for ci, (root,) in enumerate(bass_notes):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(8):
+                mix_at(mix, punk_bass(n(root), 0.1, 0.06), pos + i * eighth)
+
+    chords = [n('A3'), n('F3'), n('C3'), n('G3')]
+    for ci, root in enumerate(chords):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, power_chord(root, 0.2, 0.28), pos)
+                mix_at(mix, power_chord(root, 0.12, 0.18), pos + eighth)
+
+    # Chaotic lead
+    patterns = [
+        [(0, 'A5', 0.25), (0.25, 'G5', 0.25), (0.5, 'A5', 0.5),
+         (1, 'C6', 0.5), (1.5, 'A5', 0.5), (2, 'G5', 1), (3, 'E5', 1)],
+        [(0, 'F5', 0.5), (0.5, 'G5', 0.5), (1, 'A5', 0.5), (1.5, 'C6', 0.5),
+         (2, 'A5', 1), (3, 'F5', 1)],
+        [(0, 'C5', 0.5), (0.5, 'E5', 0.5), (1, 'G5', 0.5), (1.5, 'C6', 0.5),
+         (2, 'G5', 0.5), (2.5, 'E5', 0.5), (3, 'C5', 1)],
+        [(0, 'G5', 0.25), (0.25, 'A5', 0.25), (0.5, 'B5', 0.5),
+         (1, 'D6', 0.5), (1.5, 'B5', 0.5), (2, 'G5', 1), (3, 'E5', 1)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
+                pos = b * bar + int(beat_off * beat)
+                dur = 60.0 / bpm * dur_beats * 0.75
+                mix_at(mix, lead_synth(n(note_name), dur) * 1.4, pos)
+
+    return mix, "level_03_boss"
+
+
+# ── LEVEL 4: BLONDIE CONCERT AT CBGB ────────────────────────────────
+
+def create_level_04_theme():
+    """New wave punk-pop — 138 BPM, 8 bars.
+    Blondie: cool + dangerous, driving beat, pop hooks.
+    Progression: Dm - Bb - F - C (2 bars each)
+    """
+    bpm = 138
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    new_wave_drums(mix, bpm, total_bars)
+
+    # Bass: punchy new wave
+    bass_prog = [('D2', 'D3'), ('A#2', 'A#3'), ('F2', 'F3'), ('C2', 'C3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(4):
+                bp = pos + i * beat
+                mix_at(mix, punk_bass(n(lo), 0.15, 0.1), bp)
+                if i % 2 == 0:
+                    mix_at(mix, punk_bass(n(hi), 0.08, 0.05), bp + eighth)
+
+    # Synth arpeggios — new wave signature
+    arp_chords = [
+        [n('D4'), n('F4'), n('A4'), n('D5')],
+        [n('A#3'), n('D4'), n('F4'), n('A#4')],
+        [n('F3'), n('A3'), n('C4'), n('F4')],
+        [n('C4'), n('E4'), n('G4'), n('C5')],
+    ]
+    for ci, chord in enumerate(arp_chords):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(16):  # 16th note arps
+                note = chord[i % len(chord)]
+                npos = pos + i * sixteenth
+                mix_at(mix, synth_arp(note, 0.06), npos)
+
+    # Guitar: choppy new wave stabs
+    gtr = [
+        [n('D3'), n('F3'), n('A3')],
+        [n('A#3'), n('D4'), n('F4')],
+        [n('F3'), n('A3'), n('C4')],
+        [n('C3'), n('E3'), n('G3')],
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.06) * 0.9, pos + eighth)
+
+    # Strings: minimal, cool
+    strs = [
+        [n('D4'), n('F4'), n('A4')],
+        [n('A#3'), n('D4'), n('F4')],
+        [n('F4'), n('A4'), n('C5')],
+        [n('C4'), n('E4'), n('G4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 0.6, ci * 2 * bar)
+
+    # Lead: catchy Blondie-style melody
+    melody = [
+        (0, 0, 'A4', 0.5), (0, 0.5, 'D5', 0.5), (0, 1, 'F5', 1),
+        (0, 2, 'E5', 0.5), (0, 2.5, 'D5', 0.5), (0, 3, 'C5', 1),
+        (1, 0, 'D5', 1.5), (1, 1.5, 'C5', 0.5), (1, 2, 'A4', 2),
+        (2, 0, 'A#4', 0.5), (2, 0.5, 'D5', 0.5), (2, 1, 'F5', 0.5),
+        (2, 1.5, 'G5', 0.5), (2, 2, 'F5', 1), (2, 3, 'D5', 1),
+        (3, 0, 'A#4', 1), (3, 1, 'C5', 0.5), (3, 1.5, 'D5', 0.5),
+        (3, 2, 'F5', 2),
+        (4, 0, 'F5', 0.5), (4, 0.5, 'G5', 0.5), (4, 1, 'A5', 1),
+        (4, 2, 'G5', 0.5), (4, 2.5, 'F5', 0.5), (4, 3, 'D5', 1),
+        (5, 0, 'C5', 1), (5, 1, 'D5', 0.5), (5, 1.5, 'F5', 0.5),
+        (5, 2, 'D5', 2),
+        (6, 0, 'A5', 0.5), (6, 0.5, 'G5', 0.5), (6, 1, 'F5', 0.5),
+        (6, 1.5, 'D5', 0.5), (6, 2, 'C5', 1), (6, 3, 'D5', 1),
+        (7, 0, 'A4', 2), (7, 2, 'D5', 2),
+    ]
+    for m_bar, beat_off, note_name, dur_beats in melody:
+        pos = m_bar * bar + int(beat_off * beat)
+        dur = 60.0 / bpm * dur_beats * 0.85
+        mix_at(mix, lead_synth(n(note_name), dur), pos)
+
+    return mix, "level_04_theme"
+
+
+def create_level_04_boss():
+    """Debbie Harry boss — intense new wave showdown, 142 BPM.
+    Progression: Dm - Am - Bb - A7
+    """
+    bpm = 142
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    new_wave_drums(mix, bpm, total_bars)
+    # Extra intensity: crashes every 2 bars
+    for b in range(0, total_bars, 2):
+        mix_at(mix, crash_cymbal(0.3), b * bar)
+
+    bass_prog = [('D2', 'D3'), ('A2', 'A3'), ('A#2', 'A#3'), ('A2', 'A3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(8):
+                f = n(lo) if i % 2 == 0 else n(hi)
+                mix_at(mix, punk_bass(f, 0.1, 0.06), pos + i * eighth)
+
+    # Intense synth arps
+    arp_chords = [
+        [n('D4'), n('F4'), n('A4'), n('D5')],
+        [n('A3'), n('C4'), n('E4'), n('A4')],
+        [n('A#3'), n('D4'), n('F4'), n('A#4')],
+        [n('A3'), n('C#4'), n('E4'), n('G4')],
+    ]
+    for ci, chord in enumerate(arp_chords):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(16):
+                note = chord[i % len(chord)]
+                mix_at(mix, synth_arp(note, 0.05) * 1.2, pos + i * sixteenth)
+
+    strs = [
+        [n('D4'), n('F4'), n('A4')],
+        [n('A3'), n('C4'), n('E4')],
+        [n('A#3'), n('D4'), n('F4')],
+        [n('A3'), n('C#4'), n('E4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 0.9, ci * 2 * bar)
+
+    patterns = [
+        [(0, 'D5', 0.5), (0.5, 'F5', 0.5), (1, 'A5', 1),
+         (2, 'G5', 0.5), (2.5, 'F5', 0.5), (3, 'D5', 1)],
+        [(0, 'C5', 0.5), (0.5, 'E5', 0.5), (1, 'A5', 1),
+         (2, 'G5', 0.5), (2.5, 'E5', 0.5), (3, 'C5', 1)],
+        [(0, 'A#4', 0.5), (0.5, 'D5', 0.5), (1, 'F5', 1),
+         (2, 'G5', 0.5), (2.5, 'F5', 0.5), (3, 'D5', 1)],
+        [(0, 'A4', 0.5), (0.5, 'C#5', 0.5), (1, 'E5', 1),
+         (2, 'G5', 0.5), (2.5, 'E5', 0.5), (3, 'C#5', 1)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
+                pos = b * bar + int(beat_off * beat)
+                dur = 60.0 / bpm * dur_beats * 0.8
+                mix_at(mix, lead_synth(n(note_name), dur) * 1.2, pos)
+
+    return mix, "level_04_boss"
+
+
+# ── LEVEL 5: BEE GEES DISCO FLOOR ───────────────────────────────────
+
+def create_level_05_theme():
+    """Ultimate Bee Gees disco — 110 BPM, 8 bars.
+    Tight disco grooves, falsetto energy, dance floor momentum.
+    Progression: Fm7 - Bbm7 - Eb7 - Ab (2 bars each)
+    """
+    bpm = 110
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    bee_gees_drums(mix, bpm, total_bars)
+
+    # Bass: classic Bee Gees octave disco bounce
+    bass_prog = [('F2', 'F3'), ('A#2', 'A#3'), ('D#2', 'D#3'), ('G#2', 'G#3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            # Smooth octave bounce
+            mix_at(mix, disco_bass(n(lo), 0.2, 0.14), pos)
+            mix_at(mix, disco_bass(n(hi), 0.12, 0.08), pos + eighth)
+            mix_at(mix, disco_bass(n(lo), 0.1, 0.06), pos + beat)
+            mix_at(mix, disco_bass(n(hi), 0.15, 0.1), pos + beat + eighth)
+            mix_at(mix, disco_bass(n(lo), 0.18, 0.12), pos + beat * 2)
+            mix_at(mix, disco_bass(n(hi), 0.1, 0.06), pos + beat * 2 + eighth)
+            mix_at(mix, disco_bass(n(lo), 0.08, 0.05), pos + beat * 3)
+            mix_at(mix, disco_bass(n(hi), 0.12, 0.08), pos + beat * 3 + eighth)
+
+    # Guitar: tight disco chucka
+    gtr = [
+        [n('F3'), n('G#3'), n('C4'), n('D#4')],
+        [n('A#3'), n('C#4'), n('F4'), n('G#4')],
+        [n('D#3'), n('G3'), n('A#3'), n('D4')],
+        [n('G#3'), n('C4'), n('D#4'), n('G4')],
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.07), pos + eighth)
+                mix_at(mix, guitar_mute(chord), pos + 3 * sixteenth)
+
+    # Lush strings — big Bee Gees production
+    strs = [
+        [n('F3'), n('G#3'), n('C4'), n('D#4'), n('F4')],
+        [n('A#3'), n('C#4'), n('F4'), n('G#4')],
+        [n('D#3'), n('G3'), n('A#3'), n('D4')],
+        [n('G#3'), n('C4'), n('D#4'), n('G4'), n('C5')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 1.1, ci * 2 * bar)
+
+    # Falsetto lead: Bee Gees signature
+    melody = [
+        (0, 0, 'C5', 0.5), (0, 0.5, 'D#5', 0.5), (0, 1, 'F5', 1),
+        (0, 2, 'G5', 0.5), (0, 2.5, 'F5', 0.5), (0, 3, 'D#5', 1),
+        (1, 0, 'C5', 1.5), (1, 1.5, 'D#5', 0.5), (1, 2, 'F5', 2),
+        (2, 0, 'G5', 0.5), (2, 0.5, 'A#5', 0.5), (2, 1, 'G5', 1),
+        (2, 2, 'F5', 0.5), (2, 2.5, 'D#5', 0.5), (2, 3, 'C5', 1),
+        (3, 0, 'D#5', 1), (3, 1, 'F5', 0.5), (3, 1.5, 'G5', 0.5),
+        (3, 2, 'A#5', 2),
+        (4, 0, 'G#5', 0.5), (4, 0.5, 'G5', 0.5), (4, 1, 'F5', 1),
+        (4, 2, 'D#5', 0.5), (4, 2.5, 'F5', 0.5), (4, 3, 'G5', 1),
+        (5, 0, 'G#5', 1.5), (5, 1.5, 'G5', 0.5), (5, 2, 'F5', 2),
+        (6, 0, 'C5', 0.5), (6, 0.5, 'D#5', 0.5), (6, 1, 'F5', 0.5),
+        (6, 1.5, 'G5', 0.5), (6, 2, 'A#5', 1), (6, 3, 'G5', 1),
+        (7, 0, 'F5', 1.5), (7, 1.5, 'D#5', 0.5), (7, 2, 'C5', 2),
+    ]
+    for m_bar, beat_off, note_name, dur_beats in melody:
+        pos = m_bar * bar + int(beat_off * beat)
+        dur = 60.0 / bpm * dur_beats * 0.85
+        mix_at(mix, falsetto_lead(n(note_name), dur), pos)
+
+    return mix, "level_05_theme"
+
+
+def create_level_05_boss():
+    """Bee Gees trio boss — ultimate disco showdown, 118 BPM.
+    Progression: Fm - Db - Ab - Eb
+    """
+    bpm = 118
+    beat = bts(1, bpm)
+    bar = beat * 4
+    eighth = beat // 2
+    sixteenth = beat // 4
+    total_bars = 8
+    mix = np.zeros(bar * total_bars)
+
+    bee_gees_drums(mix, bpm, total_bars)
+    # Extra groove: double hi-hat intensity
+    for b in range(total_bars):
+        for i in range(8):
+            mix_at(mix, hihat_closed(0.03) * 0.3, b * bar + i * eighth + sixteenth)
+
+    bass_prog = [('F2', 'F3'), ('C#2', 'C#3'), ('G#2', 'G#3'), ('D#2', 'D#3')]
+    for ci, (lo, hi) in enumerate(bass_prog):
+        for rep in range(2):
+            b = ci * 2 + rep
+            pos = b * bar
+            for i in range(8):
+                f = n(lo) if i % 2 == 0 else n(hi)
+                mix_at(mix, disco_bass(f, 0.13, 0.09), pos + i * eighth)
+
+    gtr = [
+        [n('F3'), n('G#3'), n('C4')],
+        [n('C#3'), n('F3'), n('G#3')],
+        [n('G#3'), n('C4'), n('D#4')],
+        [n('D#3'), n('G3'), n('A#3')],
+    ]
+    for ci, chord in enumerate(gtr):
+        for rep in range(2):
+            b = ci * 2 + rep
+            for i in range(4):
+                pos = b * bar + i * beat
+                mix_at(mix, guitar_stab(chord, 0.08) * 1.1, pos + eighth)
+                mix_at(mix, guitar_mute(chord), pos + 3 * sixteenth)
+
+    # Big strings
+    strs = [
+        [n('F3'), n('G#3'), n('C4'), n('F4')],
+        [n('C#3'), n('F3'), n('G#3'), n('C#4')],
+        [n('G#3'), n('C4'), n('D#4'), n('G#4')],
+        [n('D#3'), n('G3'), n('A#3'), n('D#4')],
+    ]
+    for ci, chord in enumerate(strs):
+        dur = 60.0 / bpm * 8
+        mix_at(mix, string_chord(chord, dur) * 1.2, ci * 2 * bar)
+
+    # Brass stabs for drama
+    brass = [
+        [n('F4'), n('G#4'), n('C5')],
+        [n('C#4'), n('F4'), n('G#4')],
+        [n('G#4'), n('C5'), n('D#5')],
+        [n('D#4'), n('G4'), n('A#4')],
+    ]
+    for ci, chord in enumerate(brass):
+        for rep in range(2):
+            b = ci * 2 + rep
+            mix_at(mix, brass_stab(chord, 0.12) * 1.2, b * bar)
+            mix_at(mix, brass_stab(chord, 0.08) * 0.9, b * bar + beat * 2 + eighth)
+
+    # Falsetto lead: intense, high
+    patterns = [
+        [(0, 'F5', 0.5), (0.5, 'G5', 0.5), (1, 'G#5', 1),
+         (2, 'G5', 0.5), (2.5, 'F5', 0.5), (3, 'C5', 1)],
+        [(0, 'C#5', 0.5), (0.5, 'F5', 0.5), (1, 'G#5', 1),
+         (2, 'F5', 1), (3, 'C#5', 1)],
+        [(0, 'G#5', 0.5), (0.5, 'A#5', 0.5), (1, 'C6', 1),
+         (2, 'A#5', 0.5), (2.5, 'G#5', 0.5), (3, 'D#5', 1)],
+        [(0, 'D#5', 0.5), (0.5, 'G5', 0.5), (1, 'A#5', 1),
+         (2, 'G5', 0.5), (2.5, 'D#5', 0.5), (3, 'A#4', 1)],
+    ]
+    for pi, pattern in enumerate(patterns):
+        for rep in range(2):
+            b = pi * 2 + rep
+            for beat_off, note_name, dur_beats in pattern:
+                pos = b * bar + int(beat_off * beat)
+                dur = 60.0 / bpm * dur_beats * 0.8
+                mix_at(mix, falsetto_lead(n(note_name), dur) * 1.3, pos)
+
+    return mix, "level_05_boss"
+
+
 # ── Save ──────────────────────────────────────────────────────────────
 
 def save_wav_stereo(filename, data):
@@ -561,7 +1504,15 @@ def main():
     np.random.seed(42)  # Reproducible noise
     print(f"Generating disco music to: {OUTPUT_DIR}")
 
-    tracks = [create_menu_theme, create_level_theme, create_boss_theme]
+    tracks = [
+        create_menu_theme, create_level_theme, create_boss_theme,
+        # Per-level themes
+        create_level_01_theme, create_level_02_theme, create_level_03_theme,
+        create_level_04_theme, create_level_05_theme,
+        # Per-level boss themes
+        create_level_01_boss, create_level_02_boss, create_level_03_boss,
+        create_level_04_boss, create_level_05_boss,
+    ]
     for gen_fn in tracks:
         data, name = gen_fn()
         wav_name = f"{name}.wav"

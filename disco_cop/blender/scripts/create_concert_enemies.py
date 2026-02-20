@@ -277,7 +277,7 @@ def draw_speaker_frame(img, x_off, y_off, fw, fh, pose="idle", frame=0):
     vib_x = 0
     vib_y = 0
     if pose == "walk":
-        vib_x = [0, 1, 0, -1][frame % 2]
+        vib_x = [0, 1, 0, -1][frame % 4]
     elif pose == "attack":
         vib_x = [-1, 1, -1, 1][frame % 4]
         vib_y = [-1, 0, 1, 0][frame % 4]
@@ -365,7 +365,7 @@ def create_speaker_sheets():
     fw, fh = 30, 50
 
     sheets = {
-        "speaker_walk_sheet.png": ("walk", 2),
+        "speaker_walk_sheet.png": ("walk", 4),
         "speaker_attack_sheet.png": ("attack", 4),
         "speaker_hurt_sheet.png": ("hurt", 2),
         "speaker_death_sheet.png": ("death", 4),
